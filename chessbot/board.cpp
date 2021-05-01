@@ -1,16 +1,16 @@
+// Andrew Lee
+// 1 May 2021
+// board.cpp
+/*
+* Implements the board.h class. This looks horrendously long but a lot of it is copy-paste or brute-force move availability checking.
+* The logic in getLegalMoves is fairly simple, and the helper functions hide the pain.
+*/
 #include "board.h"
 #include <iostream>
 
 namespace chessbot
 {
 
-constexpr int8_t pawn = 1;
-constexpr int8_t knight = 2;
-constexpr int8_t bishop = 3;
-constexpr int8_t rook = 5;
-constexpr int8_t queen = 8;
-constexpr int8_t king = 9;
-constexpr int8_t OFFBOARD = -128;
 
 std::vector<board> board::getLegalMoves()
 {
@@ -300,7 +300,7 @@ bool board::isBlackInCheck() const
    return false;
 }
 
-void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
    board temp = b;
    auto oneSpaceFwd = b.getSpace( row + 1, col );
@@ -309,6 +309,7 @@ void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( pawn, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.enpassant = { -1, -1 };
       if( !temp.isWhiteInCheck() )
          boardsAfterMove.push_back( temp );
       temp = b;
@@ -320,7 +321,7 @@ void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board
             temp.placePiece( pawn, row + 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.enpassant = std::make_pair( row + 1, col );
+            temp.enpassant = { row + 1, col };
             if( !temp.isWhiteInCheck() )
                boardsAfterMove.push_back( temp );
             temp = b;
@@ -357,7 +358,7 @@ void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( pawn, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col-1 );
-      temp.enpassant = std::make_pair( 0, 0 );
+      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          boardsAfterMove.push_back( temp );
@@ -378,7 +379,7 @@ void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( pawn, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col + 1 );
-      temp.enpassant = std::make_pair( 0, 0 );
+      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          boardsAfterMove.push_back( temp );
@@ -386,7 +387,7 @@ void board::findWhitePawnMoves( std::vector<board>& boardsAfterMove, const board
    }
 }
 
-void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
    board temp = b;
    auto oneSpaceFwd = b.getSpace( row - 1, col );
@@ -395,6 +396,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -pawn, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
       temp = b;
@@ -406,7 +408,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
             temp.placePiece( -pawn, row - 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.enpassant = std::make_pair( row - 1, col );
+            temp.enpassant = { row - 1, col };
             if( !temp.isBlackInCheck() )
                boardsAfterMove.push_back( temp );
             temp = b;
@@ -418,6 +420,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -queen, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
       temp = b;
@@ -434,6 +437,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -pawn, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
       temp = b;
@@ -443,7 +447,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -pawn, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col - 1 );
-      temp.enpassant = std::make_pair( 0, 0 );
+      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
@@ -455,6 +459,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -pawn, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
       temp = b;
@@ -464,7 +469,7 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -pawn, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col + 1 );
-      temp.enpassant = std::make_pair( 0, 0 );
+      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
          boardsAfterMove.push_back( temp );
@@ -472,8 +477,9 @@ void board::findBlackPawnMoves( std::vector<board>& boardsAfterMove, const board
    }
 }
 
-void board::findWhiteKnightMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhiteKnightMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    if( b.getSpace( row + 1, col + 2 ) <= 0 && b.getSpace( row + 1, col + 2 ) != OFFBOARD )
    {
@@ -566,8 +572,9 @@ void board::findWhiteKnightMoves( std::vector<board>& boardsAfterMove, const boa
 
 }
 
-void board::findBlackKnightMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackKnightMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    if( b.getSpace( row + 1, col + 2 ) >= 0 )
    {
@@ -659,8 +666,9 @@ void board::findBlackKnightMoves( std::vector<board>& boardsAfterMove, const boa
    }
 }
 
-void board::findWhiteBishopMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhiteBishopMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
    {
@@ -788,8 +796,9 @@ void board::findWhiteBishopMoves( std::vector<board>& boardsAfterMove, const boa
    }
 }
 
-void board::findBlackBishopMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackBishopMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
    {
@@ -917,8 +926,9 @@ void board::findBlackBishopMoves( std::vector<board>& boardsAfterMove, const boa
    }
 }
 
-void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1; r < 8; r++ )
    {
@@ -926,8 +936,14 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
       {
          temp.placePiece( rook, r, col );
          temp.removePiece( row, col );
-         temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags ^= whiteToMove; 
+         /* This bears some explaining: castling rules are more complex than most other chess rules
+         If the rook is moving from his starting square, we want to forbid castling; all other moves have no effect.
+         But we don't want extra branches that we can avoid, so instead we do bitwise arithmetic. This statement is equivalent to
+         if (row==0 && col==7) temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+         */
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -939,7 +955,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -959,7 +976,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -971,7 +989,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -991,7 +1010,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1003,7 +1023,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1023,7 +1044,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1035,7 +1057,8 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= whiteCanNotCastle;
+         temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
+         temp.gameCtrlFlags |= whiteCanNotCastleQueenside * (row == 0) * (col == 0);
          if( !temp.isWhiteInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1050,8 +1073,9 @@ void board::findWhiteRookMoves( std::vector<board>& boardsAfterMove, const board
    }
 }
 
-void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1; r < 8; r++ )
    {
@@ -1060,7 +1084,9 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         // See explanation in findWhiteRookMoves
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1072,7 +1098,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1092,7 +1119,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1104,7 +1132,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1124,7 +1153,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1136,7 +1166,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1156,7 +1187,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1168,7 +1200,8 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
          temp.placePiece( -rook, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
-         temp.gameCtrlFlags |= blackCanNotCastle;
+         temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
+         temp.gameCtrlFlags |= blackCanNotCastleQueenside * (row == 7) * (col == 0);
          if( !temp.isBlackInCheck() )
          {
             boardsAfterMove.push_back( temp );
@@ -1183,8 +1216,9 @@ void board::findBlackRookMoves( std::vector<board>& boardsAfterMove, const board
    }
 }
 
-void board::findWhiteQueenMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhiteQueenMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
    {
@@ -1432,8 +1466,9 @@ void board::findWhiteQueenMoves( std::vector<board>& boardsAfterMove, const boar
    }
 }
 
-void board::findBlackQueenMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackQueenMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
    {
@@ -1681,15 +1716,17 @@ void board::findBlackQueenMoves( std::vector<board>& boardsAfterMove, const boar
    }
 }
 
-void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    if( b.getSpace( row + 1, col + 1 ) <= 0 && b.getSpace( row + 1, col + 1 ) != OFFBOARD )
    {
       temp.placePiece( king, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1701,7 +1738,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1713,7 +1751,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1725,7 +1764,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1737,7 +1777,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1749,7 +1790,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1761,7 +1803,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( king, row - 1, col);
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1770,18 +1813,18 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
    }
    if( b.getSpace( row - 1, col + 1 ) <= 0 && b.getSpace( row - 1, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row - 2, col + 1 );
+      temp.placePiece( king, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.gameCtrlFlags |= whiteCanNotCastle;
+      temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+      temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
       if( !temp.isWhiteInCheck() )
       {
          boardsAfterMove.push_back( temp );
       }
       temp = b;
    }
-   // TODO: Let you move one rook and still castle
-   if( !(b.gameCtrlFlags & whiteCanNotCastle) && !b.getSpace(0, 5) && !b.getSpace( 0, 6 ) && (b.getSpace(0, 7) == rook) ) // kingside castle
+   if( !(b.gameCtrlFlags & whiteCanNotCastleKingside) && !b.getSpace(0, 5) && !b.getSpace( 0, 6 ) && (b.getSpace(0, 7) == rook) ) // kingside castle
    {
       temp.placePiece( king, row, col + 1 ); // king can't move through check to castle
       temp.removePiece( row, col );
@@ -1793,13 +1836,14 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
          {
             temp.removePiece( 0, 7 );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.gameCtrlFlags |= whiteCanNotCastle;
+            temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+            temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
             boardsAfterMove.push_back( temp );
          }
       }
       temp = b;
    }
-   if( !(b.gameCtrlFlags & whiteCanNotCastle) && !b.getSpace( 0, 1 ) && !b.getSpace( 0, 2 ) && !b.getSpace( 0, 3 ) && (b.getSpace(0,0) == rook))
+   if( !(b.gameCtrlFlags & whiteCanNotCastleQueenside) && !b.getSpace( 0, 1 ) && !b.getSpace( 0, 2 ) && !b.getSpace( 0, 3 ) && (b.getSpace(0,0) == rook))
    {
       temp.placePiece( king, row, col - 1 );
       temp.removePiece( row, col );
@@ -1811,7 +1855,8 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
          {
             temp.removePiece( 0, 0 );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.gameCtrlFlags |= whiteCanNotCastle;
+            temp.gameCtrlFlags |= whiteCanNotCastleKingside;
+            temp.gameCtrlFlags |= whiteCanNotCastleQueenside;
             boardsAfterMove.push_back( temp );
          }
       }
@@ -1819,14 +1864,17 @@ void board::findWhiteKingMoves( std::vector<board>& boardsAfterMove, const board
    }
 }
 
-void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board& b, int8_t row, int8_t col )
+void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col )
 {
+   b.enpassant = { -1, -1 };
    board temp = b;
    if( b.getSpace( row + 1, col + 1 ) >= 0 )
    {
       temp.placePiece( -king, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1838,6 +1886,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1849,6 +1899,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1860,6 +1912,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1871,6 +1925,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1882,6 +1938,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1893,6 +1951,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
@@ -1904,13 +1964,15 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
       temp.placePiece( -king, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      temp.gameCtrlFlags |= blackCanNotCastleKingside;
+      temp.gameCtrlFlags |= blackCanNotCastleQueenside;
       if( !temp.isBlackInCheck() )
       {
          boardsAfterMove.push_back( temp );
       }
       temp = b;
    }
-   if( !(b.gameCtrlFlags & blackCanNotCastle) && b.getSpace( 7, 5 ) && b.getSpace( 7, 6 ) && (b.getSpace( 7, 7 ) == rook) ) // kingside castle
+   if( !(b.gameCtrlFlags & blackCanNotCastleKingside) && b.getSpace( 7, 5 ) && b.getSpace( 7, 6 ) && (b.getSpace( 7, 7 ) == rook) ) // kingside castle
    {
       temp.placePiece( -king, row, col + 1 ); // king can't move through check to castle
       temp.removePiece( row, col );
@@ -1922,13 +1984,14 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
          {
             temp.removePiece( 7, 7 );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.gameCtrlFlags |= blackCanNotCastle;
+            temp.gameCtrlFlags |= blackCanNotCastleKingside;
+            temp.gameCtrlFlags |= blackCanNotCastleQueenside;
             boardsAfterMove.push_back( temp );
          }
       }
       temp = b;
    }
-   if( !(b.gameCtrlFlags & blackCanNotCastle) && b.getSpace( 7, 1 ) && b.getSpace( 7, 2 ) && b.getSpace( 7, 3 ) && (b.getSpace( 7, 0 ) == rook) )
+   if( !(b.gameCtrlFlags & blackCanNotCastleQueenside) && b.getSpace( 7, 1 ) && b.getSpace( 7, 2 ) && b.getSpace( 7, 3 ) && (b.getSpace( 7, 0 ) == rook) )
    {
       temp.placePiece( -king, row, col - 1 );
       temp.removePiece( row, col );
@@ -1940,7 +2003,8 @@ void board::findBlackKingMoves( std::vector<board>& boardsAfterMove, const board
          {
             temp.removePiece( 7, 0 );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.gameCtrlFlags |= blackCanNotCastle;
+            temp.gameCtrlFlags |= blackCanNotCastleKingside;
+            temp.gameCtrlFlags |= blackCanNotCastleQueenside;
             boardsAfterMove.push_back( temp );
          }
       }

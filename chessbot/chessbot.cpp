@@ -9,12 +9,23 @@ int main()
 	board b = board::startingboard();
 	auto moves = b.getLegalMoves();
 	std::cout << moves.size() << "\n";
-	auto responses = moves.at(0).getLegalMoves( );
-	moves = responses.at(0).getLegalMoves();
+	auto best = std::numeric_limits<double>::lowest();
+	board bestmove;
+	std::vector<std::future<double>> vals;
 	for( auto& m : moves )
 	{
-		printchessboard( m );
+		vals.push_back( std::async( minimax, m, 1 ) );
 	}
+	for( int i = 0; i < moves.size(); i++ )
+	{
+		if(vals.at( i ).get() > best )
+		{
+			best = vals.at( i ).get();
+			bestmove = moves.at( i );
+		}
+	}
+	std::cout << "\n";
+	printchessboard( bestmove);
 	return 0;
 }
 
