@@ -12,36 +12,36 @@ constexpr int8_t queen = 8;
 constexpr int8_t king = 9;
 constexpr int8_t OFFBOARD = -128;
 
-std::vector<board> board::getLegalMoves( const board& b )
+std::vector<board> board::getLegalMoves()
 {
    std::vector<board> boardsAfterMove;
    for( int8_t row = 0; row < 8; row++ )
    {
       for( int8_t col = 0; col < 8; col++ )
       {
-         auto p = b.spaces.at( col + 8 * row );
-         if( p > 0 && ( b.gameCtrlFlags & whiteToMove ) ) // white piece and white's turn 
+         auto p = this->spaces.at( col + 8 * row );
+         if( p > 0 && ( this->gameCtrlFlags & whiteToMove ) ) // white piece and white's turn 
          {
             
             switch( p )
             {
             case pawn:
-               findWhitePawnMoves( boardsAfterMove, b, row, col );
+               findWhitePawnMoves( boardsAfterMove, *this, row, col );
                break;
             case knight:
-               findWhiteKnightMoves( boardsAfterMove, b, row, col );
+               findWhiteKnightMoves( boardsAfterMove, *this, row, col );
                break;
             case bishop:
-               findWhiteBishopMoves( boardsAfterMove, b, row, col );
+               findWhiteBishopMoves( boardsAfterMove, *this, row, col );
                break;
             case rook:
-               findWhiteRookMoves( boardsAfterMove, b, row, col );
+               findWhiteRookMoves( boardsAfterMove, *this, row, col );
                break;
             case queen:
-               findWhiteQueenMoves( boardsAfterMove, b, row, col );
+               findWhiteQueenMoves( boardsAfterMove, *this, row, col );
                break;
             case king:
-               findWhiteKingMoves( boardsAfterMove, b, row, col );
+               findWhiteKingMoves( boardsAfterMove, *this, row, col );
                break;
             default:
             {
@@ -49,27 +49,27 @@ std::vector<board> board::getLegalMoves( const board& b )
             }
             }
          }
-         else if( p < 0  && !(b.gameCtrlFlags & whiteToMove)) // black piece and black's turn
+         else if( p < 0  && !(this->gameCtrlFlags & whiteToMove)) // black piece and black's turn
          {
             switch( -p ) // invert sign because I don't like negative cases
             {
             case pawn:
-               findBlackPawnMoves( boardsAfterMove, b, row, col );
+               findBlackPawnMoves( boardsAfterMove, *this, row, col );
                break;
             case knight:
-               findBlackKnightMoves( boardsAfterMove, b, row, col );
+               findBlackKnightMoves( boardsAfterMove, *this, row, col );
                break;
             case bishop:
-               findBlackBishopMoves( boardsAfterMove, b, row, col );
+               findBlackBishopMoves( boardsAfterMove, *this, row, col );
                break;
             case rook:
-               findBlackRookMoves( boardsAfterMove, b, row, col );
+               findBlackRookMoves( boardsAfterMove, *this, row, col );
                break;
             case queen:
-               findBlackQueenMoves( boardsAfterMove, b, row, col );
+               findBlackQueenMoves( boardsAfterMove, *this, row, col );
                break;
             case king:
-               findBlackKingMoves( boardsAfterMove, b, row, col );
+               findBlackKingMoves( boardsAfterMove, *this, row, col );
                break;
             default:
             {

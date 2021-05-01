@@ -7,10 +7,10 @@ using namespace chessbot;
 int main()
 {
 	board b = board::startingboard();
-	auto moves = board::getLegalMoves( b );
+	auto moves = b.getLegalMoves();
 	std::cout << moves.size() << "\n";
-	auto responses = board::getLegalMoves( moves.at( 0 ) );
-	moves = board::getLegalMoves( responses.at( 0 ) );
+	auto responses = moves.at(0).getLegalMoves( );
+	moves = responses.at(0).getLegalMoves();
 	for( auto& m : moves )
 	{
 		printchessboard( m );

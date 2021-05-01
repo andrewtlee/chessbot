@@ -17,7 +17,7 @@ constexpr unsigned char blackCanNotCastle = 0x04;
 class board
 {
 public:
-   [[nodiscard]] static std::vector<board> getLegalMoves( const board& b);
+   [[nodiscard]] std::vector<board> getLegalMoves();
    board() = default;
    [[nodiscard]] static board startingboard();
    ~board() = default;
