@@ -7,6 +7,7 @@ using namespace chessbot;
 
 int main()
 {
+
 	board b = board::startingboard();
 	auto moves = b.getLegalMoves();
 	std::cout << moves.size() << "\n";
@@ -16,7 +17,7 @@ int main()
 	auto start = std::chrono::steady_clock::now();
 	for( auto& m : moves )
 	{
-		vals.push_back( std::async( alphabeta, m, 6, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
+		vals.push_back( std::async( alphabeta, m, 7, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
 	}
 	for( int i = 0; i < moves.size(); i++ )
 	{

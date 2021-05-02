@@ -15,6 +15,10 @@ namespace chessbot
 std::vector<board> board::getLegalMoves()
 {
    std::vector<board> boardsAfterMove;
+   if( boardsAfterMove.size() )
+   {
+      return boardsAfterMove;
+   }
    for( int8_t row = 0; row < 8; row++ )
    {
       for( int8_t col = 0; col < 8; col++ )
@@ -25,9 +29,6 @@ std::vector<board> board::getLegalMoves()
             
             switch( p )
             {
-            case pawn:
-               findWhitePawnMoves( boardsAfterMove, *this, row, col );
-               break;
             case knight:
                findWhiteKnightMoves( boardsAfterMove, *this, row, col );
                break;
@@ -37,6 +38,9 @@ std::vector<board> board::getLegalMoves()
             case rook:
                findWhiteRookMoves( boardsAfterMove, *this, row, col );
                break;
+            case pawn:
+               findWhitePawnMoves( boardsAfterMove, *this, row, col );
+               break;
             case queen:
                findWhiteQueenMoves( boardsAfterMove, *this, row, col );
                break;
@@ -45,7 +49,7 @@ std::vector<board> board::getLegalMoves()
                break;
             default:
             {
-               std::cout << "Unrecognized piece!\n";
+               throw "Unrecognized piece on board!";
             }
             }
          }
@@ -53,9 +57,6 @@ std::vector<board> board::getLegalMoves()
          {
             switch( -p ) // invert sign because I don't like negative cases
             {
-            case pawn:
-               findBlackPawnMoves( boardsAfterMove, *this, row, col );
-               break;
             case knight:
                findBlackKnightMoves( boardsAfterMove, *this, row, col );
                break;
@@ -64,6 +65,9 @@ std::vector<board> board::getLegalMoves()
                break;
             case rook:
                findBlackRookMoves( boardsAfterMove, *this, row, col );
+               break;
+            case pawn:
+               findBlackPawnMoves( boardsAfterMove, *this, row, col );
                break;
             case queen:
                findBlackQueenMoves( boardsAfterMove, *this, row, col );

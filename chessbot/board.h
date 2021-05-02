@@ -19,6 +19,7 @@
 #include <array>
 #include <stdint.h>
 #include <vector>
+#include <coroutine>
 
 namespace chessbot
 {
@@ -42,10 +43,11 @@ public:
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
    unsigned char gameCtrlFlags = whiteToMove;
+   double heuristicVal = 0.;
+
 protected:
    std::pair<int8_t, int8_t> enpassant = { 0, 0 };
    std::array<int8_t, 64> spaces{ 0 };
-
    // helper functions to make getLegalMoves readable
    // boardsAfterMove is an outparam that each valid move gets appended to
    static void findWhitePawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );

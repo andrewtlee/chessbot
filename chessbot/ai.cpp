@@ -1,4 +1,6 @@
 #include "ai.h"
+#include <stack>
+#include <algorithm>
 
 namespace chessbot
 {
@@ -10,7 +12,7 @@ constexpr double rook_value = 5.;
 constexpr double queen_value = 9.f;
 
 // For now, the heuristic is a naive piece count
-double getHeuristic( board b )
+double getHeuristic( board& b )
 {
    double material = 0;
    for( int row = 0; row < 8; row++ )
@@ -53,6 +55,7 @@ double getHeuristic( board b )
          }
       }
    }
+   b.heuristicVal = material;
    return material;
 }
 
@@ -98,6 +101,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
       return getHeuristic( b );
    }
    auto moves = b.getLegalMoves();
+   
    double val = 0.;
    if( moves.empty() && b.isWhiteInCheck() ) // white is in checkmate
    {
@@ -110,6 +114,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
    if( b.gameCtrlFlags & whiteToMove )
    {
       val = std::numeric_limits<double>::lowest();
+      //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
       for( auto& m : moves )
       {
          val = std::max( val, alphabeta( m, depth - 1, alpha, beta ) );
@@ -124,6 +129,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
    else
    {
       val = std::numeric_limits<double>::max();
+      //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       for( auto& m : moves )
       {
          val = std::min( val, alphabeta( m, depth - 1, alpha, beta ) );
@@ -134,6 +140,14 @@ double alphabeta( board b, int depth, double alpha, double beta )
          }
       }
       return val;
+   }
+}
+
+double iterativeDFS(board b, int depth )
+{
+   for( int i = 0; i < depth; i++ )
+   {
+      alphabeta( b, i, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() );
    }
 }
 
