@@ -100,14 +100,14 @@ double alphabeta( board b, int depth, double alpha, double beta )
    {
       return getHeuristic( b );
    }
-   auto moves = b.getLegalMoves();
-   
+   //auto moves = b.getLegalMoves();
+   auto gen = b.getMove();
    double val = 0.;
-   if( moves.empty() && b.isWhiteInCheck() ) // white is in checkmate
+   if( !gen && b.isWhiteInCheck() ) // white is in checkmate
    {
       return std::numeric_limits<double>::lowest();
    }
-   else if( moves.empty() && b.isBlackInCheck() )
+   else if( !gen && b.isBlackInCheck() )
    {
       return std::numeric_limits<double>::max(); // white wins
    }
@@ -115,9 +115,9 @@ double alphabeta( board b, int depth, double alpha, double beta )
    {
       val = std::numeric_limits<double>::lowest();
       //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
-      for( auto& m : moves )
+      while(gen )
       {
-         val = std::max( val, alphabeta( m, depth - 1, alpha, beta ) );
+         val = std::max( val, alphabeta( gen(), depth - 1, alpha, beta ) );
          alpha = std::max( alpha, val );
          if( alpha >= beta )
          {
@@ -130,9 +130,9 @@ double alphabeta( board b, int depth, double alpha, double beta )
    {
       val = std::numeric_limits<double>::max();
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
-      for( auto& m : moves )
+      while(gen )
       {
-         val = std::min( val, alphabeta( m, depth - 1, alpha, beta ) );
+         val = std::min( val, alphabeta( gen(), depth - 1, alpha, beta ) );
          beta = std::min( beta, val );
          if( beta <= alpha )
          {
@@ -149,6 +149,7 @@ double iterativeDFS(board b, int depth )
    {
       alphabeta( b, i, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() );
    }
+   return 0.;
 }
 
 } // namespace chessbot

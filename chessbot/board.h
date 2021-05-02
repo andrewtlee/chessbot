@@ -19,7 +19,7 @@
 #include <array>
 #include <stdint.h>
 #include <vector>
-#include <coroutine>
+#include "generator.h"
 
 namespace chessbot
 {
@@ -34,6 +34,7 @@ class board
 {
 public:
    [[nodiscard]] std::vector<board> getLegalMoves();
+   Generator<board> getMove();
    board() = default;
    [[nodiscard]] static board startingboard();
    ~board() = default;
@@ -62,6 +63,19 @@ protected:
    static void findBlackQueenMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
    static void findWhiteKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
    static void findBlackKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
+
+   Generator<board> generateWhitePawnMoves(int8_t row, int8_t col ) const;
+   Generator<board> generateBlackPawnMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhiteKnightMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateBlackKnightMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhiteBishopMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateBlackBishopMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhiteRookMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateBlackRookMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhiteQueenMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateBlackQueenMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhiteKingMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateBlackKingMoves( int8_t row, int8_t col ) const;
 };
 
 // Pieces are represented as constant int8s with unique identifiers

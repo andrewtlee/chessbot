@@ -15,9 +15,10 @@ int main()
 	board bestmove;
 	std::vector<std::future<double>> vals;
 	auto start = std::chrono::steady_clock::now();
-	for( auto& m : moves )
+	auto gen = b.getMove();
+	while( gen )
 	{
-		vals.push_back( std::async( alphabeta, m, 7, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
+		vals.push_back( std::async( alphabeta, gen(), 7, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
 	}
 	for( int i = 0; i < moves.size(); i++ )
 	{
