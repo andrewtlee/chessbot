@@ -43,7 +43,7 @@ public:
    bool isBlackInCheck() const;
    unsigned char gameCtrlFlags = whiteToMove;
 protected:
-   std::pair<int8_t, int8_t> enpassant = std::make_pair( 0, 0 );
+   std::pair<int8_t, int8_t> enpassant = { 0, 0 };
    std::array<int8_t, 64> spaces{ 0 };
 
    // helper functions to make getLegalMoves readable

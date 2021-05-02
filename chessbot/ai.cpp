@@ -91,6 +91,50 @@ double minimax( board b, int depth )
    return val;
 }
 
-
+double alphabeta( board b, int depth, double alpha, double beta )
+{
+   if( !depth )
+   {
+      return getHeuristic( b );
+   }
+   auto moves = b.getLegalMoves();
+   double val = 0.;
+   if( moves.empty() && b.isWhiteInCheck() ) // white is in checkmate
+   {
+      return std::numeric_limits<double>::lowest();
+   }
+   else if( moves.empty() && b.isBlackInCheck() )
+   {
+      return std::numeric_limits<double>::max(); // white wins
+   }
+   if( b.gameCtrlFlags & whiteToMove )
+   {
+      val = std::numeric_limits<double>::lowest();
+      for( auto& m : moves )
+      {
+         val = std::max( val, alphabeta( m, depth - 1, alpha, beta ) );
+         alpha = std::max( alpha, val );
+         if( alpha >= beta )
+         {
+            break;
+         }
+      }
+      return val;
+   }
+   else
+   {
+      val = std::numeric_limits<double>::max();
+      for( auto& m : moves )
+      {
+         val = std::min( val, alphabeta( m, depth - 1, alpha, beta ) );
+         beta = std::min( beta, val );
+         if( beta <= alpha )
+         {
+            break;
+         }
+      }
+      return val;
+   }
+}
 
 } // namespace chessbot

@@ -2,6 +2,7 @@
 //
 
 #include "chessbot.h"
+#include <chrono>
 using namespace chessbot; 
 
 int main()
@@ -12,19 +13,24 @@ int main()
 	auto best = std::numeric_limits<double>::lowest();
 	board bestmove;
 	std::vector<std::future<double>> vals;
+	auto start = std::chrono::steady_clock::now();
 	for( auto& m : moves )
 	{
-		vals.push_back( std::async( minimax, m, 1 ) );
+		vals.push_back( std::async( alphabeta, m, 6, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
 	}
 	for( int i = 0; i < moves.size(); i++ )
 	{
-		if(vals.at( i ).get() > best )
+		double v = vals.at( i ).get();
+		std::cout << v << " ";
+		if( v > best )
 		{
-			best = vals.at( i ).get();
+			best = v;
 			bestmove = moves.at( i );
 		}
 	}
+	auto end = std::chrono::steady_clock::now();
 	std::cout << "\n";
+	std::cout << "Async time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "\n";
 	printchessboard( bestmove);
 	return 0;
 }
