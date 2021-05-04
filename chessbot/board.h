@@ -29,6 +29,7 @@ constexpr unsigned char whiteCanNotCastleKingside = 0x02;
 constexpr unsigned char whiteCanNotCastleQueenside = 0x04;
 constexpr unsigned char blackCanNotCastleKingside = 0x08;
 constexpr unsigned char blackCanNotCastleQueenside = 0x10;
+constexpr int8_t OFFBOARD = -128;
 
 class board
 {
@@ -38,17 +39,17 @@ public:
    board() = default;
    [[nodiscard]] static board startingboard();
    ~board() = default;
-   inline void placePiece( int8_t id, int8_t row, int8_t col );
-   inline void removePiece( int8_t row, int8_t col );
+   void placePiece( int8_t id, int8_t row, int8_t col );
+   void removePiece( int8_t row, int8_t col );
    int8_t getSpace( int8_t row, int8_t col ) const;
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
    unsigned char gameCtrlFlags = whiteToMove;
    double heuristicVal = 0.;
-
-protected:
-   std::pair<int8_t, int8_t> enpassant = { 0, 0 };
    std::array<int8_t, 64> spaces{ 0 };
+protected:
+   std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
+   
    // helper functions to make getLegalMoves readable
    // boardsAfterMove is an outparam that each valid move gets appended to
    static void findWhitePawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
@@ -85,6 +86,6 @@ constexpr int8_t bishop = 3;
 constexpr int8_t rook = 5;
 constexpr int8_t queen = 8;
 constexpr int8_t king = 9;
-constexpr int8_t OFFBOARD = -128;
+
 
 }

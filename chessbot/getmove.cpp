@@ -156,7 +156,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( pawn, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
@@ -168,7 +168,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
             temp.placePiece( pawn, row + 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.enpassant = { row + 1, col };
+            //temp.enpassant = { row + 1, col };
             if( !temp.isWhiteInCheck() )
                co_yield temp;
             temp = *this;
@@ -191,9 +191,24 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
       temp = *this;
    }
    auto leftDiag = this->getSpace( row + 1, col - 1 );
-   if( leftDiag && leftDiag != OFFBOARD )
+   if( leftDiag < 0 && leftDiag != OFFBOARD && row != 6)
    {
       temp.placePiece( pawn, row + 1, col - 1 );
+      temp.removePiece( row, col );
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
+   }
+   else if( leftDiag < 0 && leftDiag != OFFBOARD)
+   {
+      temp.placePiece( knight, row + 1, col - 1 );
+      temp.removePiece( row, col );
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
+      temp.placePiece( queen, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -205,16 +220,35 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( pawn, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col - 1 );
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
    }
    auto rightDiag = this->getSpace( row + 1, col + 1 );
-   if( rightDiag && rightDiag != OFFBOARD )
+   if( rightDiag < 0 && rightDiag != OFFBOARD && row != 6)
    {
       temp.placePiece( pawn, row + 1, col + 1 );
+      temp.removePiece( row, col );
+      if( row == 7 )
+      {
+         temp.placePiece( pawn, row + 1, col + 1 );
+      }
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
+   }
+   else if( rightDiag < 0 && rightDiag != OFFBOARD )
+   {
+      temp.placePiece( knight, row + 1, col - 1 );
+      temp.removePiece( row, col );
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
+      temp.placePiece( queen, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -226,7 +260,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( pawn, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col + 1 );
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
@@ -864,7 +898,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col ) <= 0 && this->getSpace( row + 1, col ) != OFFBOARD )
    {
-      temp.placePiece( king, row, col );
+      temp.placePiece( king, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1002,7 +1036,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( -pawn, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          co_yield temp;
       temp =*this;
@@ -1014,7 +1048,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
             temp.placePiece( -pawn, row - 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
-            temp.enpassant = { row - 1, col };
+            //temp.enpassant = { row - 1, col };
             if( !temp.isBlackInCheck() )
                co_yield temp;
             temp =*this;
@@ -1026,7 +1060,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( -queen, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          co_yield temp;
       temp =*this;
@@ -1038,48 +1072,56 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
       temp =*this;
    }
    auto leftDiag = this->getSpace( row - 1, col - 1 );
-   if( leftDiag && leftDiag != OFFBOARD )
+   if( leftDiag > 0 && row != 1 )
    {
       temp.placePiece( -pawn, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          co_yield temp;
       temp =*this;
    }
-   else if( this->enpassant.first == row - 1 && this->enpassant.second == col - 1 )
+   else if (leftDiag > 0 )
    {
-      temp.placePiece( -pawn, row - 1, col - 1 );
+      temp.placePiece( -knight, row - 1, col - 1 );
       temp.removePiece( row, col );
-      temp.removePiece( row, col - 1 );
-      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isBlackInCheck() )
+      if( !temp.isWhiteInCheck() )
          co_yield temp;
-      temp =*this;
+      temp = *this;
+      temp.placePiece( -queen, row - 1, col - 1 );
+      temp.removePiece( row, col );
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
    }
    auto rightDiag = this->getSpace( row - 1, col + 1 );
-   if( rightDiag && rightDiag != OFFBOARD )
+   if( rightDiag > 0 && row != 1)
    {
       temp.placePiece( -pawn, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      temp.enpassant = { -1, -1 };
+      //temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          co_yield temp;
       temp =*this;
    }
-   else if( this->enpassant.first == row - 1 && this->enpassant.second == col + 1 )
+   else if( rightDiag > 0 )
    {
-      temp.placePiece( -pawn, row - 1, col + 1 );
+      temp.placePiece( -knight, row - 1, col - 1 );
       temp.removePiece( row, col );
-      temp.removePiece( row, col + 1 );
-      temp.enpassant = { -1, -1 };
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isBlackInCheck() )
+      if( !temp.isWhiteInCheck() )
          co_yield temp;
-      temp =*this;
+      temp = *this;
+      temp.placePiece( -queen, row - 1, col - 1 );
+      temp.removePiece( row, col );
+      temp.gameCtrlFlags ^= whiteToMove;
+      if( !temp.isWhiteInCheck() )
+         co_yield temp;
+      temp = *this;
    }
 }
 

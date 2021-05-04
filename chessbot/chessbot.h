@@ -5,8 +5,38 @@
 
 #include <iostream>
 #include <future>
+#include <chrono>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 // TODO: Reference additional headers your program requires here.
 #include "board.h"
 #include "ai.h"
-void printchessboard( chessbot::board b );
+namespace py = pybind11;
+namespace chessbot
+{ 
+
+
+std::array<int, 64> getCurrentBoard();
+unsigned char getGameCtrlFlags();
+std::array<int, 64> getAutomaticMove(int depth);
+void makeAutomaticMove(int depth);
+struct game
+{
+	board currentBoard = board::startingboard();
+};
+
+
+
+
+
+PYBIND11_MODULE( chessbot, m )
+{
+	m.doc() = "Pybind chessbot engine";
+	m.def( "getCurrentBoard", &getCurrentBoard, "Gets the current board state." );
+	m.def( "getGameCtrlFlags", &getGameCtrlFlags, "Gets other info for board state." );
+	m.def( "getAutomaticMove", &getAutomaticMove, "Use the AI to get its best move, without affecting the game state." );
+	m.def( "makeAutomaticMove", &makeAutomaticMove, "Have the AI make its best move, updating the game state." );
+}
+
+}

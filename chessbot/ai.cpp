@@ -1,6 +1,7 @@
 #include "ai.h"
 #include <stack>
 #include <algorithm>
+#include <iostream>
 
 namespace chessbot
 {
@@ -9,7 +10,7 @@ constexpr double pawn_value = 1.;
 constexpr double knight_value = 2.9;
 constexpr double bishop_value = 3.;
 constexpr double rook_value = 5.;
-constexpr double queen_value = 9.f;
+constexpr double queen_value = 9.;
 
 // For now, the heuristic is a naive piece count
 double getHeuristic( board& b )
@@ -23,39 +24,68 @@ double getHeuristic( board& b )
          switch( sp )
          {
          case pawn:
+         {
             material += pawn_value;
             break;
+         }
          case -pawn:
+         {
             material -= pawn_value;
             break;
+         }
          case knight:
+         {
             material += knight_value;
             break;
+         }
          case -knight:
+         {
             material -= knight_value;
             break;
+         }
          case bishop:
+         {
             material += bishop_value;
             break;
+         }
          case -bishop:
+         {
             material -= bishop_value;
             break;
+         }
          case rook:
+         {
             material += rook_value;
             break;
+         }
          case -rook:
+         {
             material -= rook_value;
             break;
+         }
          case queen:
+         {
             material += queen_value;
             break;
+         }
          case -queen:
+         {
             material -= queen_value;
             break;
+         }
+         case 0:
+         {
+            break;
+         }
+         default:
+         {
+            break;
+         }
          }
       }
    }
    b.heuristicVal = material;
+   //std::cout << material << " ";
    return material;
 }
 
@@ -96,7 +126,7 @@ double minimax( board b, int depth )
 
 double alphabeta( board b, int depth, double alpha, double beta )
 {
-   if( !depth )
+   if( depth == 0 )
    {
       return getHeuristic( b );
    }
@@ -115,7 +145,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
    {
       val = std::numeric_limits<double>::lowest();
       //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
-      while(gen )
+      while( gen )
       {
          val = std::max( val, alphabeta( gen(), depth - 1, alpha, beta ) );
          alpha = std::max( alpha, val );
@@ -130,7 +160,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
    {
       val = std::numeric_limits<double>::max();
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
-      while(gen )
+      while( gen )
       {
          val = std::min( val, alphabeta( gen(), depth - 1, alpha, beta ) );
          beta = std::min( beta, val );
@@ -141,15 +171,6 @@ double alphabeta( board b, int depth, double alpha, double beta )
       }
       return val;
    }
-}
-
-double iterativeDFS(board b, int depth )
-{
-   for( int i = 0; i < depth; i++ )
-   {
-      alphabeta( b, i, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() );
-   }
-   return 0.;
 }
 
 } // namespace chessbot
