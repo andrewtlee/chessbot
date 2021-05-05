@@ -34,7 +34,7 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = True
+        self.AIisWhite = False
         self.AIisBlack = False
         self.waitingOnPlayer = False
         self.windowClosed = False
@@ -46,11 +46,11 @@ class Chess:
         while not self.windowClosed:
             if self.gameCtrlFlags & whiteToMove:
                 if self.AIisWhite:
-                    start = time.time()
-                    chessbot.makeAutomaticMove(5)
-                    end = time.time()
+                    #start = time.time()
+                    chessbot.makeAutomaticMove(6)
+                    #end = time.time()
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                    print(f"{end-start} spent generating move tree")
+                    #print(f"{end-start} spent generating move tree")
                     
                 else:
                     self.waitingOnPlayer = True
@@ -60,7 +60,7 @@ class Chess:
                         self.prospectiveMovePiece = -128                   
             else:
                 if self.AIisBlack:
-                    chessbot.makeAutomaticMove(5)
+                    chessbot.makeAutomaticMove(6)
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
                 else:
                     self.waitingOnPlayer = True
@@ -126,8 +126,13 @@ class Chess:
                     elif self.logicalClickStack[0][1] - self.logicalClickStack[1][1] == -2: # castle queenside
                         self.prospectiveMoveBoard[self.logicalClickStack[0][1] + 1  + 8*self.logicalClickStack[0][0]] = 5 if self.gameCtrlFlags & whiteToMove else -5
                         self.prospectiveMoveBoard[0 + 8*self.logicalClickStack[1][0]] = 0
+                if self.prospectiveMovePiece == 1 and self.logicalClickStack[0][0] == 7: # pawn promotion (queen only)
+                    self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = 8
+                elif self.prospectiveMovePiece == -1 and self.logicalClickStack[0][0] == 0:
+                    #print("AI move:"); printBoardToTerminal(chessbot.getAutomaticMove(3))
+                    self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = -8
                 self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
-                printBoardToTerminal(self.prospectiveMoveBoard)
+                #print("Self board"); printBoardToTerminal(self.prospectiveMoveBoard)
                 self.prospectiveMoveBoard = chessbot.getCurrentBoard()
 
     def onClose(self):
