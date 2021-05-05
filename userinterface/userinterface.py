@@ -8,7 +8,7 @@ Or at least, it will eventually...
 import chessbot
 import tkinter as tk
 import tkinter.messagebox
-from time import sleep
+import time
 import sys
 
 sizeOfBoard = 720
@@ -35,31 +35,47 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = True
+        self.AIisWhite = False
         self.AIisBlack = True
+        self.waitingOnPlayer = False
         self.windowClosed = False
+        self.logicalClickStack = [[-1, -1], [-1,-1]]
+        self.prospectiveMoveBoard = self.board[:]
+        self.prospectiveMovePiece = -128
 
     def mainloop(self):
         while not self.windowClosed:
             if self.gameCtrlFlags & whiteToMove:
                 if self.AIisWhite:
-                    chessbot.makeAutomaticMove(4)
-                    self.board = chessbot.getCurrentBoard()
-                    self.gameCtrlFlags = chessbot.getGameCtrlFlags()
+                    start = time.time()
+                    chessbot.makeAutomaticMove(5)
+                    end = time.time()
+                    self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                    print(f"{end-start} spent generating move tree")
+                    
                 else:
-                    pass # process player move here...
+                    self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
+                    if not self.waitingOnPlayer:
+                        self.logicalClickStack = [[-1, -1], [-1,-1]]
+                        self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                        self.prospectiveMovePiece = -128
+                    
             else:
                 if self.AIisBlack:
-                    chessbot.makeAutomaticMove(4)
-                    self.board = chessbot.getCurrentBoard()
-                    self.gameCtrlFlags = chessbot.getGameCtrlFlags()
+                    chessbot.makeAutomaticMove(5)
+                    self.prospectiveMoveBoard = chessbot.getCurrentBoard()
                 else:
-                    pass
-            
+                    self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
+                    if not self.waitingOnPlayer:
+                        self.logicalClickStack = [[-1, -1], [-1,-1]]
+                        self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                        self.prospectiveMovePiece = -128
+            self.board = chessbot.getCurrentBoard()
+            self.gameCtrlFlags = chessbot.getGameCtrlFlags()
             self.drawBoard()
             self.window.update_idletasks()
             self.window.update()
-            sleep(0.25)
+            time.sleep(0.25)
     
     def initializeBoard(self):
         color = "white"
@@ -81,8 +97,8 @@ class Chess:
 
         for row in range(8):
             for col in range(8):
-                c = getSpace(row, col, self.board)
-                self.pieceHandles.append(self.canvas.create_text(col*sizeOfBoard/8 + sizeOfBoard/16, (7-row)*sizeOfBoard/8 + sizeOfBoard/16, font="* 60", text=piecesAsUnicode[c]))
+                c = self.getSpace(row, col)
+                self.pieceHandles.append(self.canvas.create_text(col*symbolSize + symbolSize/2, (7-row)*symbolSize + symbolSize/2, font="* 60", text=piecesAsUnicode[c]))
 
     def drawBoard(self):
         for p in self.pieceHandles:
@@ -91,25 +107,37 @@ class Chess:
 
         for row in range(8):
             for col in range(8):
-                c = getSpace(row, col, self.board)
-                self.pieceHandles.append(self.canvas.create_text(col*sizeOfBoard/8 + sizeOfBoard/16, (7-row)*sizeOfBoard/8 + sizeOfBoard/16, font="* 60", text=piecesAsUnicode[c]))
+                c = self.getSpace(row, col)
+                self.pieceHandles.append(self.canvas.create_text(col*symbolSize + symbolSize/2, (7-row)*symbolSize + symbolSize/2, font="* 60", text=piecesAsUnicode[c]))
                 
     def click(self, event):
-        gridPosition = [event.x, event.y]
+        if self.waitingOnPlayer:
+            gridPosition = [event.x, event.y]
+            logicalPosition = [int(gridPosition[0] / (sizeOfBoard / 8)), int(gridPosition[1] / (sizeOfBoard /8))]
+            self.logicalClickStack[1] = self.logicalClickStack[0]
+            self.logicalClickStack[0] = [7-logicalPosition[1], logicalPosition[0]]
+            spaceval = self.getSpace(self.logicalClickStack[1][0], self.logicalClickStack[1][1])
+            self.prospectiveMovePiece = spaceval
+            if self.prospectiveMovePiece != -128:
+                self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = self.prospectiveMovePiece
+                self.prospectiveMoveBoard[self.logicalClickStack[1][1] + 8*self.logicalClickStack[1][0]] = 0
+                printBoardToTerminal(self.prospectiveMoveBoard)
 
     def onClose(self):
         self.window.destroy()
         self.windowClosed = True
-    
-    def convertGridToLogicalPosition(self, gridPosition):
-        pass
 
+    def getSpace(self, row: int, col: int)->int:
+        if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
+            return self.board[ col + 8 * row ]
+        else:
+            return -128
 
-def getSpace(row: int, col: int, boardarr: list)->int:
-    if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
-        return boardarr[ col + 8 * row ]
-    else:
-        return -128
+def getSpace(row: int, col: int, board: list)->int:
+        if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
+            return board[ col + 8 * row ]
+        else:
+            return -128
 
 def printBoardToTerminal(board: list):
     piecesAsUnicode = {1: "\u2659", 2: "\u2658", 3:"\u2657", 5: "\u2656", 8: "\u2655", 9: "\u2654",
@@ -121,29 +149,8 @@ def printBoardToTerminal(board: list):
             c = getSpace(i,j, board)
             print(f"{c:3}", end="")
         print()
-
-def printBoardToWindow(board: list, window: tk.Tk):
-    bts_frame = tk.Frame()
-
-def main():
-    game = Chess()
-    game.mainloop()
+    
    
 if __name__ == "__main__":
-    main()
-
-
-
-"""
-    board = chessbot.getCurrentBoard()
-    gamestate = chessbot.getGameCtrlFlags()
-    for i in range(10):
-        chessbot.makeAutomaticMove(4)
-        board = chessbot.getCurrentBoard()
-        flags = chessbot.getGameCtrlFlags();
-        printBoardToTerminal(board)
-        if not flags & 0x01:
-            print(f"White moved {i}")
-        else:
-            print(f"Black moved {i}")
-"""
+    game = Chess()
+    game.mainloop()

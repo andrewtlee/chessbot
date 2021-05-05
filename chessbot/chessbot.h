@@ -20,7 +20,8 @@ namespace chessbot
 std::array<int, 64> getCurrentBoard();
 unsigned char getGameCtrlFlags();
 std::array<int, 64> getAutomaticMove(int depth);
-void makeAutomaticMove(int depth);
+bool makeAutomaticMove(int depth);
+bool makeManualMove( std::array<int, 64> move );
 struct game
 {
 	board currentBoard = board::startingboard();
@@ -37,6 +38,7 @@ PYBIND11_MODULE( chessbot, m )
 	m.def( "getGameCtrlFlags", &getGameCtrlFlags, "Gets other info for board state." );
 	m.def( "getAutomaticMove", &getAutomaticMove, "Use the AI to get its best move, without affecting the game state." );
 	m.def( "makeAutomaticMove", &makeAutomaticMove, "Have the AI make its best move, updating the game state." );
+	m.def( "makeManualMove", &makeManualMove, "Enter a move on the board manually." );
 }
 
 }

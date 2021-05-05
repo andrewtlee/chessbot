@@ -123,52 +123,54 @@ double minimax( board b, int depth )
    return val;
 }
 
-double alphabeta( board b, int depth, double alpha, double beta )
+board alphabeta( board b, int depth, double alpha, double beta )
 {
    if( depth == 0 )
    {
-      return getHeuristic( b );
+      b.heuristicVal = getHeuristic( b );
+      return b;
    }
    //auto moves = b.getLegalMoves();
    auto gen = b.getMove();
-   double val = 0.;
    if( !gen && b.isWhiteInCheck() ) // white is in checkmate
    {
-      return std::numeric_limits<double>::lowest()+1;
+      b.heuristicVal = std::numeric_limits<double>::lowest()+depth;
+      return b;
    }
    else if( !gen && b.isBlackInCheck() )
    {
-      return std::numeric_limits<double>::max()-1; // white wins
+      b.heuristicVal = std::numeric_limits<double>::max()-depth; // white wins
+      return b;
    }
    if( b.gameCtrlFlags & whiteToMove )
    {
-      val = std::numeric_limits<double>::lowest()+1;
+      b.heuristicVal = std::numeric_limits<double>::lowest()+depth;
       //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
       while( gen )
       {
-         val = std::max( val, alphabeta( gen(), depth - 1, alpha, beta ) );
-         alpha = std::max( alpha, val );
+         b.heuristicVal = std::max( b.heuristicVal, alphabeta( gen(), depth - 1, alpha, beta ).heuristicVal );
+         alpha = std::max( alpha, b.heuristicVal );
          if( alpha >= beta )
          {
             break;
          }
       }
-      return val;
+      return b;
    }
    else
    {
-      val = std::numeric_limits<double>::max()-1;
+      b.heuristicVal = std::numeric_limits<double>::max()-depth;
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       while( gen )
       {
-         val = std::min( val, alphabeta( gen(), depth - 1, alpha, beta ) );
-         beta = std::min( beta, val );
+         b.heuristicVal = std::min( b.heuristicVal, alphabeta( gen(), depth - 1, alpha, beta ).heuristicVal );
+         beta = std::min( beta, b.heuristicVal );
          if( beta <= alpha )
          {
             break;
          }
       }
-      return val;
+      return b;
    }
 }
 

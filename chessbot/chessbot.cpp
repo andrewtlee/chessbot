@@ -37,36 +37,30 @@ unsigned char getGameCtrlFlags()
 std::array<int, 64> getAutomaticMove( int depth )
 {
 	auto gen = G.currentBoard.getMove();
-	std::vector<std::future<double>> vals;
-	std::vector<board> moves;
+	std::vector<std::future<board>> fmoves;
 	while( gen )
 	{
-		moves.push_back( gen() );
-		vals.push_back( std::async( alphabeta, moves.back(), depth, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
+		fmoves.push_back( std::async( alphabeta, gen(), depth, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
 	}
 	board bestmove;
-	
-	for( int i = 0; i < moves.size(); i++ )
+	bestmove.heuristicVal = G.currentBoard.gameCtrlFlags & whiteToMove ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
+	for( auto& m : fmoves )
 	{
-		double v = vals.at( i ).get();
+		board b = m.get();
 		
 		//std::cout << v << " ";
 		if( G.currentBoard.gameCtrlFlags & whiteToMove )
 		{
-			double best = std::numeric_limits<double>::lowest();
-			if( v > best )
+			if( b.heuristicVal > bestmove.heuristicVal )
 			{
-				best = v;
-				bestmove = moves.at( i );
+				bestmove = b;
 			}
 		}
 		else
 		{
-			double best = std::numeric_limits<double>::max();
-			if( v < best )
+			if( b.heuristicVal < bestmove.heuristicVal )
 			{
-				best = v;
-				bestmove = moves.at( i );
+				bestmove = b;
 			}
 		}
 	}
@@ -78,37 +72,37 @@ std::array<int, 64> getAutomaticMove( int depth )
 	return currboard;
 }
 
-void makeAutomaticMove(int depth)
+bool makeAutomaticMove(int depth)
 {
 	auto gen = G.currentBoard.getMove();
-	std::vector<std::future<double>> vals;
-	std::vector<board> moves;
+	std::vector<std::future<board>> fmoves;
+	if( !gen )
+	{
+		return false; // no legal moves
+	}
 	while( gen )
 	{
-		moves.push_back( gen() );
-		vals.push_back( std::async( alphabeta, moves.back(), depth, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
+		fmoves.push_back( std::async( alphabeta, gen(), depth, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
 	}
 	board bestmove;
-	auto best = G.currentBoard.gameCtrlFlags & whiteToMove ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
-	for( int i = 0; i < moves.size(); i++ )
+	bestmove.heuristicVal = G.currentBoard.gameCtrlFlags & whiteToMove ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
+	for( auto& m : fmoves )
 	{
 		//printchessboard( moves.at( i ) );
-		double v = vals.at( i ).get();
+		board b = m.get();
 		//std::cout << v << " ";
 		if( G.currentBoard.gameCtrlFlags & whiteToMove )
 		{
-			if( v > best )
+			if( b.heuristicVal > bestmove.heuristicVal )
 			{
-				best = v;
-				bestmove = moves.at( i );
+				bestmove = b;
 			}
 		}
 		else
 		{
-			if( v < best )
+			if( b.heuristicVal < bestmove.heuristicVal )
 			{
-				best = v;
-				bestmove = moves.at( i );
+				bestmove = b;
 			}
 		}
 	}
@@ -118,39 +112,37 @@ void makeAutomaticMove(int depth)
 	//	currboard.at( i ) = bestmove.getSpace( i / 8, i % 8 );
 	//}
 	G.currentBoard = bestmove;
+	return true; // report success
 }
 
-}
-/*
-int main()
+bool makeManualMove( std::array<int, 64> move )
 {
-
-	board b = board::startingboard();
-	auto moves = b.getLegalMoves();
-	std::cout << moves.size() << "\n";
-	auto best = std::numeric_limits<double>::lowest();
-	board bestmove;
-	std::vector<std::future<double>> vals;
-	auto start = std::chrono::steady_clock::now();
-	auto gen = b.getMove();
-	while( gen )
+	auto legalMoves = G.currentBoard.getLegalMoves();
+	if( legalMoves.empty() )
 	{
-		vals.push_back( std::async( alphabeta, gen(), 7, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() ) );
+		return false; // no legal moves
 	}
-	for( int i = 0; i < moves.size(); i++ )
+	for( auto& m : legalMoves )
 	{
-		double v = vals.at( i ).get();
-		std::cout << v << " ";
-		if( v > best )
+		bool match = true;
+		for( int i = 0; i < 64; i++ )
 		{
-			best = v;
-			bestmove = moves.at( i );
+			if( move.at( i ) != m.spaces.at( i ) )
+			{
+				match = false;
+				break;
+			}
+		}
+		if( match )
+		{
+			std::cout << "Match!\n";
+			G.currentBoard = m;
+			return true;
 		}
 	}
-	auto end = std::chrono::steady_clock::now();
-	std::cout << "\n";
-	std::cout << "Async time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "\n";
-	printchessboard( bestmove);
-	return 0;
+	return false;
 }
-*/
+
+
+
+}
