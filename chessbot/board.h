@@ -29,6 +29,7 @@ constexpr unsigned char whiteCanNotCastleKingside = 0x02;
 constexpr unsigned char whiteCanNotCastleQueenside = 0x04;
 constexpr unsigned char blackCanNotCastleKingside = 0x08;
 constexpr unsigned char blackCanNotCastleQueenside = 0x10;
+constexpr unsigned char gameOver = 0x20;
 constexpr int8_t OFFBOARD = -128;
 
 class board
@@ -51,19 +52,6 @@ protected:
    std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
    
    // helper functions to make getLegalMoves readable
-   // boardsAfterMove is an outparam that each valid move gets appended to
-   static void findWhitePawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackPawnMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findWhiteKnightMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackKnightMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findWhiteBishopMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackBishopMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findWhiteRookMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackRookMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findWhiteQueenMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackQueenMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findWhiteKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
-   static void findBlackKingMoves( std::vector<board>& boardsAfterMove, board b, int8_t row, int8_t col );
 
    Generator<board> generateWhitePawnMoves(int8_t row, int8_t col ) const;
    Generator<board> generateBlackPawnMoves( int8_t row, int8_t col ) const;

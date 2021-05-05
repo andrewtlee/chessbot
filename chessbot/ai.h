@@ -11,7 +11,7 @@
 namespace chessbot
 {
 
-double getHeuristic( board& b );
+double getHeuristic( const board& b );
 double minimax( board b, int depth );
 double alphabeta( board b, int depth, double alpha, double beta );
 

@@ -13,7 +13,7 @@ constexpr double rook_value = 5.;
 constexpr double queen_value = 9.;
 
 // For now, the heuristic is a naive piece count
-double getHeuristic( board& b )
+double getHeuristic( const board& b )
 {
    double material = 0;
    for( int row = 0; row < 8; row++ )
@@ -84,7 +84,6 @@ double getHeuristic( board& b )
          }
       }
    }
-   b.heuristicVal = material;
    //std::cout << material << " ";
    return material;
 }
@@ -135,15 +134,15 @@ double alphabeta( board b, int depth, double alpha, double beta )
    double val = 0.;
    if( !gen && b.isWhiteInCheck() ) // white is in checkmate
    {
-      return std::numeric_limits<double>::lowest();
+      return std::numeric_limits<double>::lowest()+1;
    }
    else if( !gen && b.isBlackInCheck() )
    {
-      return std::numeric_limits<double>::max(); // white wins
+      return std::numeric_limits<double>::max()-1; // white wins
    }
    if( b.gameCtrlFlags & whiteToMove )
    {
-      val = std::numeric_limits<double>::lowest();
+      val = std::numeric_limits<double>::lowest()+1;
       //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
       while( gen )
       {
@@ -158,7 +157,7 @@ double alphabeta( board b, int depth, double alpha, double beta )
    }
    else
    {
-      val = std::numeric_limits<double>::max();
+      val = std::numeric_limits<double>::max()-1;
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       while( gen )
       {
