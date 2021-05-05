@@ -6,7 +6,7 @@
 * The logic in getLegalMoves is fairly simple, and the helper functions hide the pain.
 */
 #include "board.h"
-
+#include <iostream>
 namespace chessbot
 {
 
@@ -2254,33 +2254,34 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
       }
       temp =*this;
    }
-   if( !(this->gameCtrlFlags & blackCanNotCastleKingside) && this->getSpace( 7, 5 ) && this->getSpace( 7, 6 ) && (this->getSpace( 7, 7 ) == rook) ) // kingside castle
+   if( !(this->gameCtrlFlags & blackCanNotCastleKingside) && !this->getSpace( 7, 5 ) && !this->getSpace( 7, 6 ) && (this->getSpace( 7, 7 ) == -rook) ) // kingside castle
    {
       temp.placePiece( -king, row, col + 1 ); // king can't move through check to castle
       temp.removePiece( row, col );
       if( !temp.isBlackInCheck() )
       {
          temp.placePiece( -king, row, col + 2 );
-         temp.placePiece( -rook, row, col + 1 ); // rook overwrites phantom king
+         temp.placePiece( -rook, row, col + 1 ); 
          if( !temp.isBlackInCheck() )
          {
             temp.removePiece( 7, 7 );
             temp.gameCtrlFlags ^= whiteToMove;
             temp.gameCtrlFlags |= blackCanNotCastleKingside;
             temp.gameCtrlFlags |= blackCanNotCastleQueenside;
+            
             co_yield temp;
          }
       }
       temp =*this;
    }
-   if( !(this->gameCtrlFlags & blackCanNotCastleQueenside) && this->getSpace( 7, 1 ) && this->getSpace( 7, 2 ) && this->getSpace( 7, 3 ) && (this->getSpace( 7, 0 ) == rook) )
+   if( !(this->gameCtrlFlags & blackCanNotCastleQueenside) && !this->getSpace( 7, 1 ) && !this->getSpace( 7, 2 ) && !this->getSpace( 7, 3 ) && (this->getSpace( 7, 0 ) == -rook) )
    {
       temp.placePiece( -king, row, col - 1 );
       temp.removePiece( row, col );
       if( !temp.isBlackInCheck() )
       {
          temp.placePiece( -king, row, col - 2 );
-         temp.placePiece( rook, 7, 3 );
+         temp.placePiece( -rook, 7, 3 );
          if( !temp.isBlackInCheck() )
          {
             temp.removePiece( 7, 0 );

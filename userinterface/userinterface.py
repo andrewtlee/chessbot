@@ -9,7 +9,6 @@ import chessbot
 import tkinter as tk
 import tkinter.messagebox
 import time
-import sys
 
 sizeOfBoard = 720
 symbolSize = (sizeOfBoard / 8)
@@ -24,7 +23,7 @@ class Chess:
         self.window.title("Chessbot (Alpha)")
         self.canvas = tk.Canvas(self.window, width=sizeOfBoard, height=sizeOfBoard)
         self.canvas.pack()
-        self.window.bind("<Button-1>", self.click)
+        self.window.bind("<Button-1>", self.onClick)
         self.window.protocol("WM_DELETE_WINDOW", self.onClose)
         self.board = chessbot.getCurrentBoard()
         self.gameCtrlFlags = chessbot.getGameCtrlFlags()
@@ -35,8 +34,8 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = False
-        self.AIisBlack = True
+        self.AIisWhite = True
+        self.AIisBlack = False
         self.waitingOnPlayer = False
         self.windowClosed = False
         self.logicalClickStack = [[-1, -1], [-1,-1]]
@@ -54,18 +53,17 @@ class Chess:
                     print(f"{end-start} spent generating move tree")
                     
                 else:
-                    self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
+                    self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
                         self.logicalClickStack = [[-1, -1], [-1,-1]]
                         self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                        self.prospectiveMovePiece = -128
-                    
+                        self.prospectiveMovePiece = -128                   
             else:
                 if self.AIisBlack:
                     chessbot.makeAutomaticMove(5)
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
                 else:
-                    self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
+                    self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
                         self.logicalClickStack = [[-1, -1], [-1,-1]]
                         self.prospectiveMoveBoard = chessbot.getCurrentBoard()
@@ -87,11 +85,11 @@ class Chess:
                 y2 = y1+sizeOfBoard/8
                 self.canvas.create_rectangle((x1, y1, x2, y2), fill=color)
                 if color == "white":
-                    color = "blue"
+                    color = "green"
                 else:
                     color = "white"
             if color == "white":
-                color = "blue"
+                color = "green"
             else:
                 color = "white"
 
@@ -110,7 +108,7 @@ class Chess:
                 c = self.getSpace(row, col)
                 self.pieceHandles.append(self.canvas.create_text(col*symbolSize + symbolSize/2, (7-row)*symbolSize + symbolSize/2, font="* 60", text=piecesAsUnicode[c]))
                 
-    def click(self, event):
+    def onClick(self, event):
         if self.waitingOnPlayer:
             gridPosition = [event.x, event.y]
             logicalPosition = [int(gridPosition[0] / (sizeOfBoard / 8)), int(gridPosition[1] / (sizeOfBoard /8))]
@@ -121,7 +119,16 @@ class Chess:
             if self.prospectiveMovePiece != -128:
                 self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = self.prospectiveMovePiece
                 self.prospectiveMoveBoard[self.logicalClickStack[1][1] + 8*self.logicalClickStack[1][0]] = 0
+                if abs(self.prospectiveMovePiece) == 9:
+                    if self.logicalClickStack[0][1] - self.logicalClickStack[1][1] == 2: # castle kingside
+                        self.prospectiveMoveBoard[self.logicalClickStack[0][1] - 1  + 8*self.logicalClickStack[1][0]] = 5 if self.gameCtrlFlags & whiteToMove else -5
+                        self.prospectiveMoveBoard[7 + 8*self.logicalClickStack[1][0]] = 0
+                    elif self.logicalClickStack[0][1] - self.logicalClickStack[1][1] == -2: # castle queenside
+                        self.prospectiveMoveBoard[self.logicalClickStack[0][1] + 1  + 8*self.logicalClickStack[0][0]] = 5 if self.gameCtrlFlags & whiteToMove else -5
+                        self.prospectiveMoveBoard[0 + 8*self.logicalClickStack[1][0]] = 0
+                self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
                 printBoardToTerminal(self.prospectiveMoveBoard)
+                self.prospectiveMoveBoard = chessbot.getCurrentBoard()
 
     def onClose(self):
         self.window.destroy()

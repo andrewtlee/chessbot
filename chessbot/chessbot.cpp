@@ -135,7 +135,6 @@ bool makeManualMove( std::array<int, 64> move )
 		}
 		if( match )
 		{
-			std::cout << "Match!\n";
 			G.currentBoard = m;
 			return true;
 		}
