@@ -36,17 +36,23 @@ class board
 {
 public:
    [[nodiscard]] std::vector<board> getLegalMoves();
-   Generator<board> getMove();
-   board() = default;
+   [[nodiscard]] Generator<board> getMove();
    [[nodiscard]] static board startingboard();
+
+   board() = default;
    ~board() = default;
+   bool operator==( board b );
+   bool operator==( board&& b );
+
    void placePiece( int8_t id, int8_t row, int8_t col );
    void removePiece( int8_t row, int8_t col );
+
    int8_t getSpace( int8_t row, int8_t col ) const;
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
+
    unsigned char gameCtrlFlags = whiteToMove;
-   double heuristicVal = 0.;
+   int heuristicVal = 0;
    std::array<int8_t, 64> spaces{ 0 };
 protected:
    std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
@@ -68,12 +74,12 @@ protected:
 };
 
 // Pieces are represented as constant int8s with unique identifiers
-constexpr int8_t pawn = 1;
-constexpr int8_t knight = 2;
-constexpr int8_t bishop = 3;
-constexpr int8_t rook = 5;
-constexpr int8_t queen = 8;
-constexpr int8_t king = 9;
+constexpr int8_t PAWN = 1;
+constexpr int8_t KNIGHT = 2;
+constexpr int8_t BISHOP = 3;
+constexpr int8_t ROOK = 5;
+constexpr int8_t QUEEN = 8;
+constexpr int8_t KING = 9;
 
 
 }

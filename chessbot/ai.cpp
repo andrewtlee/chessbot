@@ -1,19 +1,18 @@
 #include "ai.h"
-#include <stack>
-#include <algorithm>
+#include "board.h"
 #include <iostream>
 
 namespace chessbot
 {
 
-constexpr double pawn_value = 1.;
-constexpr double knight_value = 2.9;
-constexpr double bishop_value = 3.;
-constexpr double rook_value = 5.;
-constexpr double queen_value = 9.;
+constexpr int PAWN_VALUE = 10;
+constexpr int KNIGHT_VALUE = 29;
+constexpr int BISHOP_VALUE = 30;
+constexpr int ROOK_VALUE = 50;
+constexpr int QUEEN_VALUE = 90;
 
 // For now, the heuristic is a naive piece count
-double getHeuristic( const board& b )
+int getHeuristic( const board& b )
 {
    double material = 0;
    for( int row = 0; row < 8; row++ )
@@ -23,54 +22,54 @@ double getHeuristic( const board& b )
          auto sp = b.getSpace( row, col );
          switch( sp )
          {
-         case pawn:
+         case PAWN:
          {
-            material += pawn_value;
+            material += PAWN_VALUE;
             break;
          }
-         case -pawn:
+         case -PAWN:
          {
-            material -= pawn_value;
+            material -= PAWN_VALUE;
             break;
          }
-         case knight:
+         case KNIGHT:
          {
-            material += knight_value;
+            material += KNIGHT_VALUE;
             break;
          }
-         case -knight:
+         case -KNIGHT:
          {
-            material -= knight_value;
+            material -= KNIGHT_VALUE;
             break;
          }
-         case bishop:
+         case BISHOP:
          {
-            material += bishop_value;
+            material += BISHOP_VALUE;
             break;
          }
-         case -bishop:
+         case -BISHOP:
          {
-            material -= bishop_value;
+            material -= BISHOP_VALUE;
             break;
          }
-         case rook:
+         case ROOK:
          {
-            material += rook_value;
+            material += ROOK_VALUE;
             break;
          }
-         case -rook:
+         case -ROOK:
          {
-            material -= rook_value;
+            material -= ROOK_VALUE;
             break;
          }
-         case queen:
+         case QUEEN:
          {
-            material += queen_value;
+            material += QUEEN_VALUE;
             break;
          }
-         case -queen:
+         case -QUEEN:
          {
-            material -= queen_value;
+            material -= QUEEN_VALUE;
             break;
          }
          case 0:
@@ -98,11 +97,11 @@ double minimax( board b, int depth )
    double val = 0.;
    if( moves.empty() && b.isWhiteInCheck() ) // white is in checkmate
    {
-      return std::numeric_limits<double>::lowest(); 
+      return std::numeric_limits<int>::max() + depth*1000;
    }
    else if( moves.empty() && b.isBlackInCheck() )
    {
-      return std::numeric_limits<double>::max(); // white wins
+      return std::numeric_limits<int>::lowest() - depth*10000; // white wins
    }
    if( b.gameCtrlFlags & whiteToMove )
    {
@@ -123,9 +122,9 @@ double minimax( board b, int depth )
    return val;
 }
 
-board alphabeta( board b, int depth, double alpha, double beta )
+board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
 {
-   if( depth == 0 )
+   if( depth == maxdepth )
    {
       b.heuristicVal = getHeuristic( b );
       return b;
@@ -134,21 +133,21 @@ board alphabeta( board b, int depth, double alpha, double beta )
    auto gen = b.getMove();
    if( !gen && b.isWhiteInCheck() ) // white is in checkmate
    {
-      b.heuristicVal = std::numeric_limits<double>::lowest()+depth;
+      b.heuristicVal = std::numeric_limits<int>::lowest() - depth * 10000;
       return b;
    }
    else if( !gen && b.isBlackInCheck() )
    {
-      b.heuristicVal = std::numeric_limits<double>::max()-depth; // white wins
+      b.heuristicVal = std::numeric_limits<int>::max() - depth * 10000; // white wins
       return b;
    }
    if( b.gameCtrlFlags & whiteToMove )
    {
-      b.heuristicVal = std::numeric_limits<double>::lowest()+depth;
+      b.heuristicVal = std::numeric_limits<int>::lowest();
       //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
       while( gen )
       {
-         b.heuristicVal = std::max( b.heuristicVal, alphabeta( gen(), depth - 1, alpha, beta ).heuristicVal );
+         b.heuristicVal = std::max( b.heuristicVal, alphabeta( gen(), depth + 1, maxdepth, alpha, beta ).heuristicVal );
          alpha = std::max( alpha, b.heuristicVal );
          if( alpha >= beta )
          {
@@ -159,11 +158,11 @@ board alphabeta( board b, int depth, double alpha, double beta )
    }
    else
    {
-      b.heuristicVal = std::numeric_limits<double>::max()-depth;
+      b.heuristicVal = std::numeric_limits<int>::max();
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       while( gen )
       {
-         b.heuristicVal = std::min( b.heuristicVal, alphabeta( gen(), depth - 1, alpha, beta ).heuristicVal );
+         b.heuristicVal = std::min( b.heuristicVal, alphabeta( gen(), depth + 1, maxdepth, alpha, beta ).heuristicVal );
          beta = std::min( beta, b.heuristicVal );
          if( beta <= alpha )
          {

@@ -6,13 +6,13 @@
 * The board is an object, but the AI is a set of functions
 */
 # pragma once
-#include "board.h"
+class board;
 
 namespace chessbot
 {
 
-double getHeuristic( const board& b );
+int getHeuristic( const board& b );
 double minimax( board b, int depth );
-board alphabeta( board b, int depth, double alpha, double beta );
+board alphabeta( board b, int depth, int maxdepth, int alpha, int beta );
 
 }

@@ -2,14 +2,23 @@
 // 1 May 2021
 // board.cpp
 /*
-* Implements the board.h class. This looks horrendously long but a lot of it is copy-paste or brute-force move availability checking.
-* The logic in getLegalMoves is fairly simple, and the helper functions hide the pain.
+* Implements the board.h class. This looks horrendously long but a lot of it is copy-paste or brute-force move availability checKING.
+* The logic in getMove is fairly simple, and the helper functions hide the pain.
 */
 #include "board.h"
-#include <iostream>
+
 namespace chessbot
 {
 
+bool board::operator==( board b )
+{
+   return b.gameCtrlFlags == this->gameCtrlFlags && b.spaces == this->spaces;
+}
+
+bool board::operator==( board&& b )
+{
+   return b.gameCtrlFlags == this->gameCtrlFlags && b.spaces == this->spaces;
+}
 
 void board::placePiece( int8_t id, int8_t row, int8_t col )
 {
@@ -34,7 +43,7 @@ bool board::isWhiteInCheck() const
    int8_t row = 0, col = 0;
    for(auto i = 0; i < this->spaces.size(); i++ )
    {
-      if( this->spaces.at( i ) == king )
+      if( this->spaces.at( i ) == KING )
       {
          col = i % 8;
          row = i / 8;
@@ -42,43 +51,43 @@ bool board::isWhiteInCheck() const
       }
    }
 
-   if( this->getSpace( row + 1, col + 1 ) == -pawn || this->getSpace( row + 1, col - 1 ) == -pawn )
-      return true; // black pawn checks the king
+   if( this->getSpace( row + 1, col + 1 ) == -PAWN || this->getSpace( row + 1, col - 1 ) == -PAWN )
+      return true; // black PAWN checks the KING
 
    for( auto r = row + 1; r < 8; r++ )
    {
-      if( this->getSpace( r, col ) == -rook || this->getSpace( r, col ) == -queen )
-         return true; // black queen or rook checks the king from above
+      if( this->getSpace( r, col ) == -ROOK || this->getSpace( r, col ) == -QUEEN )
+         return true; // black QUEEN or ROOK checks the KING from above
       if( this->getSpace( r, col ) )
          break; // row blocked
    }
    for( auto r = row - 1; r >= 0; r-- )
    {
-      if( this->getSpace( r, col ) == -rook || this->getSpace( r, col ) == -queen )
-         return true; // black queen or rook checks the king from below
+      if( this->getSpace( r, col ) == -ROOK || this->getSpace( r, col ) == -QUEEN )
+         return true; // black QUEEN or ROOK checks the KING from below
       if( this->getSpace( r, col ) )
          break; // row blocked
    }
    for( auto c = col + 1; c < 8; c++ )
    {
-      if( this->getSpace( row, c ) == -rook || this->getSpace( row, c ) == -queen )
-         return true; // a black rook or queen check the king from the right
+      if( this->getSpace( row, c ) == -ROOK || this->getSpace( row, c ) == -QUEEN )
+         return true; // a black ROOK or QUEEN check the KING from the right
       if( this->getSpace( row, c ) )
          break;
    }
    for( auto c = col - 1; c >= 0; c-- )
    {
-      if( this->getSpace( row, c ) == -rook || this->getSpace( row, c ) == -queen )
-         return true; // a black rook or queen checks the king from the left
+      if( this->getSpace( row, c ) == -ROOK || this->getSpace( row, c ) == -QUEEN )
+         return true; // a black ROOK or QUEEN checks the KING from the left
       if( this->getSpace( row, c ) )
          break;
    }
 
    for(auto r=row+1, c=col+1;;) // this is disgusting but efficient; 
    {
-      if( this->getSpace( r, c ) == -bishop || this->getSpace( r, c ) == -queen )
+      if( this->getSpace( r, c ) == -BISHOP || this->getSpace( r, c ) == -QUEEN )
       {
-         return true; // black queen or bishop checks the king from upper-right diagonal
+         return true; // black QUEEN or BISHOP checks the KING from upper-right diagonal
       }
       if( this->getSpace( r, c ) )
          break;
@@ -86,9 +95,9 @@ bool board::isWhiteInCheck() const
    }
    for( auto r = row + 1, c = col - 1;; )
    {
-      if( this->getSpace( r, c ) == -bishop || this->getSpace( r, c ) == -queen )
+      if( this->getSpace( r, c ) == -BISHOP || this->getSpace( r, c ) == -QUEEN )
       {
-         return true; // black queen or bishop checks the king from upper-left diagonal
+         return true; // black QUEEN or BISHOP checks the KING from upper-left diagonal
       }
       if( this->getSpace( r, c ) )
          break;
@@ -96,9 +105,9 @@ bool board::isWhiteInCheck() const
    }
    for( auto r = row - 1, c = col - 1;; )
    {
-      if( this->getSpace( r, c ) == -bishop || this->getSpace( r, c ) == -queen )
+      if( this->getSpace( r, c ) == -BISHOP || this->getSpace( r, c ) == -QUEEN )
       {
-         return true; // black queen or bishop checks the king from lower-left diagonal
+         return true; // black QUEEN or BISHOP checks the KING from lower-left diagonal
       }
       if( this->getSpace( r, c ) )
          break;
@@ -106,25 +115,25 @@ bool board::isWhiteInCheck() const
    }
    for( auto r = row - 1, c = col + 1;; )
    {
-      if( this->getSpace( r, c ) == -bishop || this->getSpace( r, c ) == -queen )
+      if( this->getSpace( r, c ) == -BISHOP || this->getSpace( r, c ) == -QUEEN )
       {
-         return true; // black queen or bishop checks the king from lower-right diagonal
+         return true; // black QUEEN or BISHOP checks the KING from lower-right diagonal
       }
       if( this->getSpace( r, c ) )
          break;
       r--; c++;
    }
-   // check for knights
-   if( this->getSpace( row + 1, col + 2 ) == -knight || this->getSpace( row + 2, col + 1 ) == -knight
-      || this->getSpace( row + 2, col - 1 ) == -knight || this->getSpace( row + 1, col - 2 ) == -knight
-      || this->getSpace( row - 1, col - 2 ) == -knight || this->getSpace( row - 2, col - 1 ) == -knight
-      || this->getSpace( row - 1, col + 2 ) == -knight || this->getSpace( row - 2, col + 1 ) == -knight )
-      return true; // a black knight checks the king from... somewhere
-   if( this->getSpace( row + 1, col + 1 ) == -king || this->getSpace( row + 1, col ) == -king
-      || this->getSpace( row + 1, col - 1 ) == -king || this->getSpace( row, col - 1 ) == -king
-      || this->getSpace( row, col + 1 ) == -king || this->getSpace( row - 1, col - 1 ) == -king
-      || this->getSpace( row - 1, col ) == -king || this->getSpace( row - 1, col + 1 ) == -king )
-      return true; // the black king checks the white king (absurd, but we need to check for move generation process)
+   // check for KNIGHTs
+   if( this->getSpace( row + 1, col + 2 ) == -KNIGHT || this->getSpace( row + 2, col + 1 ) == -KNIGHT
+      || this->getSpace( row + 2, col - 1 ) == -KNIGHT || this->getSpace( row + 1, col - 2 ) == -KNIGHT
+      || this->getSpace( row - 1, col - 2 ) == -KNIGHT || this->getSpace( row - 2, col - 1 ) == -KNIGHT
+      || this->getSpace( row - 1, col + 2 ) == -KNIGHT || this->getSpace( row - 2, col + 1 ) == -KNIGHT )
+      return true; // a black KNIGHT checks the KING from... somewhere
+   if( this->getSpace( row + 1, col + 1 ) == -KING || this->getSpace( row + 1, col ) == -KING
+      || this->getSpace( row + 1, col - 1 ) == -KING || this->getSpace( row, col - 1 ) == -KING
+      || this->getSpace( row, col + 1 ) == -KING || this->getSpace( row - 1, col - 1 ) == -KING
+      || this->getSpace( row - 1, col ) == -KING || this->getSpace( row - 1, col + 1 ) == -KING )
+      return true; // the black KING checks the white KING (absurd, but we need to check for move generation process)
 
    return false;
 }
@@ -134,7 +143,7 @@ bool board::isBlackInCheck() const
    int8_t row = 0, col = 0;
    for( auto i = 0; i < this->spaces.size(); i++ )
    {
-      if( this->spaces.at( i ) == -king )
+      if( this->spaces.at( i ) == -KING )
       {
          col = i % 8;
          row = i / 8;
@@ -142,93 +151,90 @@ bool board::isBlackInCheck() const
       }
    }
 
-   if( this->getSpace( row - 1, col + 1 ) == pawn || this->getSpace( row - 1, col - 1 ) == pawn )
-      return true; // white pawn checks the king
+   if( this->getSpace( row - 1, col + 1 ) == PAWN || this->getSpace( row - 1, col - 1 ) == PAWN )
+      return true; // white PAWN checks the KING
 
    for( auto r = row + 1; r < 8; r++ )
    {
-      if( this->getSpace( r, col ) == rook || this->getSpace( r, col ) == queen )
-         return true; // white queen or rook checks the king from above
+      if( this->getSpace( r, col ) == ROOK || this->getSpace( r, col ) == QUEEN )
+         return true; // white QUEEN or ROOK checks the KING from above
       if( this->getSpace( r, col ) )
          break; // row blocked
    }
    for( auto r = row - 1; r >= 0; r-- )
    {
-      if( this->getSpace( r, col ) == rook || this->getSpace( r, col ) == queen )
-         return true; // white queen or rook checks the king from below
+      if( this->getSpace( r, col ) == ROOK || this->getSpace( r, col ) == QUEEN )
+         return true; // white QUEEN or ROOK checks the KING from below
       if( this->getSpace( r, col ) )
          break; // row blocked
    }
    for( auto c = col + 1; c < 8; c++ )
    {
-      if( this->getSpace( row, c ) == rook || this->getSpace( row, c ) == queen )
-         return true; // a white rook or queen check the king from the right
+      if( this->getSpace( row, c ) == ROOK || this->getSpace( row, c ) == QUEEN )
+         return true; // a white ROOK or QUEEN check the KING from the right
       if( this->getSpace( row, c ) )
          break;
    }
    for( auto c = col - 1; c >= 0; c-- )
    {
-      if( this->getSpace( row, c ) == rook || this->getSpace( row, c ) == queen )
-         return true; // a white rook or queen checks the king from the left
+      if( this->getSpace( row, c ) == ROOK || this->getSpace( row, c ) == QUEEN )
+         return true; // a white ROOK or QUEEN checks the KING from the left
       if( this->getSpace( row, c ) )
          break;
    }
 
-   for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row + 1, c = col + 1;; r++, c++ ) // this is disgusting but efficient; probably ought be a while-loop
    {
-      if( this->getSpace( r, c ) == bishop || this->getSpace( r, c ) == queen )
+      if( this->getSpace( r, c ) == BISHOP || this->getSpace( r, c ) == QUEEN )
       {
          return true; // white queen or bishop checks the king from upper-right diagonal
       }
       if( this->getSpace( r, c ) )
          break;
-      r++; c++;
    }
-   for( auto r = row + 1, c = col - 1;; )
+   for( auto r = row + 1, c = col - 1;; r++, c-- )
    {
-      if( this->getSpace( r, c ) == bishop || this->getSpace( r, c ) == queen )
+      if( this->getSpace( r, c ) == BISHOP || this->getSpace( r, c ) == QUEEN )
       {
          return true; // white queen or bishop checks the king from upper-left diagonal
       }
       if( this->getSpace( r, c ) )
          break;
-      r++; c--;
    }
-   for( auto r = row - 1, c = col - 1;; )
+   for( auto r = row - 1, c = col - 1;; r--, c-- )
    {
-      if( this->getSpace( r, c ) == bishop || this->getSpace( r, c ) == queen )
+      if( this->getSpace( r, c ) == BISHOP || this->getSpace( r, c ) == QUEEN )
       {
          return true; // white queen or bishop checks the king from lower-left diagonal
       }
       if( this->getSpace( r, c ) )
          break;
-      r--; c--;
+     
    }
-   for( auto r = row - 1, c = col + 1;; )
+   for( auto r = row - 1, c = col + 1;; r--, c++ )
    {
-      if( this->getSpace( r, c ) == bishop || this->getSpace( r, c ) == queen )
+      if( this->getSpace( r, c ) == BISHOP || this->getSpace( r, c ) == QUEEN )
       {
-         return true; // white queen or bishop checks the king from lower-right diagonal
+         return true; // white queen or bishop checks the KING from lower-right diagonal
       }
       if( this->getSpace( r, c ) )
          break;
-      r--; c++;
    }
-   // check for knights
-   if( this->getSpace( row + 1, col + 2 ) == knight || this->getSpace( row + 2, col + 1 ) == knight
-      || this->getSpace( row + 2, col - 1 ) == knight || this->getSpace( row + 1, col - 2 ) == knight
-      || this->getSpace( row - 1, col - 2 ) == knight || this->getSpace( row - 2, col - 1 ) == knight
-      || this->getSpace( row - 1, col + 2 ) == knight || this->getSpace( row - 2, col + 1 ) == knight )
+   // check for KNIGHTs
+   if( this->getSpace( row + 1, col + 2 ) == KNIGHT || this->getSpace( row + 2, col + 1 ) == KNIGHT
+      || this->getSpace( row + 2, col - 1 ) == KNIGHT || this->getSpace( row + 1, col - 2 ) == KNIGHT
+      || this->getSpace( row - 1, col - 2 ) == KNIGHT || this->getSpace( row - 2, col - 1 ) == KNIGHT
+      || this->getSpace( row - 1, col + 2 ) == KNIGHT || this->getSpace( row - 2, col + 1 ) == KNIGHT )
       return true; // a white knight checks the king from... somewhere
-   if( this->getSpace( row + 1, col + 1 ) == king || this->getSpace( row + 1, col ) == king
-      || this->getSpace( row + 1, col - 1 ) == king || this->getSpace( row, col - 1 ) == king
-      || this->getSpace( row, col + 1 ) == king || this->getSpace( row - 1, col - 1 ) == king
-      || this->getSpace( row - 1, col ) == king || this->getSpace( row - 1, col + 1 ) == king )
+   if( this->getSpace( row + 1, col + 1 ) == KING || this->getSpace( row + 1, col ) == KING
+      || this->getSpace( row + 1, col - 1 ) == KING || this->getSpace( row, col - 1 ) == KING
+      || this->getSpace( row, col + 1 ) == KING || this->getSpace( row - 1, col - 1 ) == KING
+      || this->getSpace( row - 1, col ) == KING || this->getSpace( row - 1, col + 1 ) == KING )
       return true; // the white king checks the black king (absurd, but we need to check for move generation process)
 
    return false;
 }
-
+ // This version of getMove() goes through the board once and finds the moves of the pieces it comes across, in order
 /*Generator<board> board::getMove()
 {
    for( int8_t row = 0; row < 8; row++ )
@@ -240,7 +246,7 @@ bool board::isBlackInCheck() const
          {
             switch( p )
             {
-            case pawn:
+            case PAWN:
             {
                auto genMove = this->generateWhitePawnMoves( row, col ); // generic ordering
                while( genMove )
@@ -249,7 +255,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case knight:
+            case KNIGHT:
             {
                auto genMove = this->generateWhiteKnightMoves( row, col );
                while( genMove )
@@ -258,7 +264,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case bishop:
+            case BISHOP:
             {
                auto genMove = this->generateWhiteBishopMoves( row, col );
                while( genMove )
@@ -267,7 +273,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case rook:
+            case ROOK:
             {
                auto genMove = this->generateWhiteRookMoves( row, col );
                while( genMove )
@@ -276,7 +282,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case queen:
+            case QUEEN:
             {
                auto genMove = this->generateWhiteQueenMoves( row, col );
                while( genMove )
@@ -285,7 +291,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case king:
+            case KING:
             {
                auto genMove = this->generateWhiteKingMoves( row, col );
                while( genMove )
@@ -304,7 +310,7 @@ bool board::isBlackInCheck() const
          {
             switch( -p )
             {
-            case pawn:
+            case PAWN:
             {
                auto genMove = this->generateBlackPawnMoves( row, col ); // generic ordering
                while( genMove )
@@ -313,7 +319,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case knight:
+            case KNIGHT:
             {
                auto genMove = this->generateBlackKnightMoves( row, col );
                while( genMove )
@@ -322,7 +328,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case bishop:
+            case BISHOP:
             {
                auto genMove = this->generateBlackBishopMoves( row, col );
                while( genMove )
@@ -331,7 +337,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case rook:
+            case ROOK:
             {
                auto genMove = this->generateBlackRookMoves( row, col );
                while( genMove )
@@ -340,7 +346,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case queen:
+            case QUEEN:
             {
                auto genMove = this->generateBlackQueenMoves( row, col );
                while( genMove )
@@ -349,7 +355,7 @@ bool board::isBlackInCheck() const
                }
                break;
             }
-            case king:
+            case KING:
             {
                auto genMove = this->generateBlackKingMoves( row, col );
                while( genMove )
@@ -367,6 +373,7 @@ bool board::isBlackInCheck() const
       }
    }
 }*/
+
 std::vector<board> board::getLegalMoves()
 {
    std::vector<board> legalMoves;
@@ -378,6 +385,7 @@ std::vector<board> board::getLegalMoves()
    return legalMoves;
 }
 
+// Thes version of getMove tries to be clever and generate likely good moves first
 Generator<board> board::getMove()
 {
    if( this->gameCtrlFlags & whiteToMove )
@@ -386,7 +394,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == knight )
+            if( this->getSpace( row, col ) == KNIGHT )
             {
                auto gen = this->generateWhiteKnightMoves(row, col);
                while( gen )
@@ -400,7 +408,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == bishop )
+            if( this->getSpace( row, col ) == BISHOP )
             {
                auto gen = this->generateWhiteBishopMoves( row, col );
                while( gen )
@@ -414,7 +422,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == pawn )
+            if( this->getSpace( row, col ) == PAWN )
             {
                auto gen = this->generateWhitePawnMoves( row, col );
                while( gen )
@@ -428,7 +436,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == rook )
+            if( this->getSpace( row, col ) == ROOK )
             {
                auto gen = this->generateWhiteRookMoves( row, col );
                while( gen )
@@ -442,7 +450,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == queen )
+            if( this->getSpace( row, col ) == QUEEN )
             {
                auto gen = this->generateWhiteQueenMoves( row, col );
                while( gen )
@@ -456,7 +464,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == king )
+            if( this->getSpace( row, col ) == KING )
             {
                auto gen = this->generateWhiteKingMoves( row, col );
                while( gen )
@@ -473,7 +481,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -knight )
+            if( this->getSpace( row, col ) == -KNIGHT )
             {
                auto gen = this->generateBlackKnightMoves( row, col );
                while( gen )
@@ -487,7 +495,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -bishop )
+            if( this->getSpace( row, col ) == -BISHOP )
             {
                auto gen = this->generateBlackBishopMoves( row, col );
                while( gen )
@@ -501,7 +509,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -pawn )
+            if( this->getSpace( row, col ) == -PAWN )
             {
                auto gen = this->generateBlackPawnMoves( row, col );
                while( gen )
@@ -515,7 +523,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -rook )
+            if( this->getSpace( row, col ) == -ROOK )
             {
                auto gen = this->generateBlackRookMoves( row, col );
                while( gen )
@@ -529,7 +537,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -queen )
+            if( this->getSpace( row, col ) == -QUEEN )
             {
                auto gen = this->generateBlackQueenMoves( row, col );
                while( gen )
@@ -543,7 +551,7 @@ Generator<board> board::getMove()
       {
          for( int8_t col = 0; col < 8; col++ )
          {
-            if( this->getSpace( row, col ) == -king )
+            if( this->getSpace( row, col ) == -KING )
             {
                auto gen = this->generateBlackKingMoves( row, col );
                while( gen )
@@ -562,7 +570,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    auto oneSpaceFwd = this->getSpace( row + 1, col );
    if( !oneSpaceFwd && row != 7 )
    {
-      temp.placePiece( pawn, row + 1, col );
+      temp.placePiece( PAWN, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       //temp.enpassant = { -1, -1 };
@@ -574,7 +582,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
          auto twoSpacesFwd = this->getSpace( row + 2, col );
          if( !twoSpacesFwd )
          {
-            temp.placePiece( pawn, row + 2, col );
+            temp.placePiece( PAWN, row + 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
             //temp.enpassant = { row + 1, col };
@@ -586,13 +594,13 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( !oneSpaceFwd )
    {
-      temp.placePiece( queen, row + 1, col );
+      temp.placePiece( QUEEN, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( knight, row + 1, col );
+      temp.placePiece( KNIGHT, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -602,7 +610,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    auto leftDiag = this->getSpace( row + 1, col - 1 );
    if( leftDiag < 0 && leftDiag != OFFBOARD && row != 6)
    {
-      temp.placePiece( pawn, row + 1, col - 1 );
+      temp.placePiece( PAWN, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -611,13 +619,13 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( leftDiag < 0 && leftDiag != OFFBOARD)
    {
-      temp.placePiece( knight, row + 1, col - 1 );
+      temp.placePiece( KNIGHT, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( queen, row + 1, col - 1 );
+      temp.placePiece( QUEEN, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -626,7 +634,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( this->enpassant.first == row + 1 && this->enpassant.second == col - 1 )
    {
-      temp.placePiece( pawn, row + 1, col - 1 );
+      temp.placePiece( PAWN, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col - 1 );
       //temp.enpassant = { -1, -1 };
@@ -638,11 +646,11 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    auto rightDiag = this->getSpace( row + 1, col + 1 );
    if( rightDiag < 0 && rightDiag != OFFBOARD && row != 6)
    {
-      temp.placePiece( pawn, row + 1, col + 1 );
+      temp.placePiece( PAWN, row + 1, col + 1 );
       temp.removePiece( row, col );
       if( row == 7 )
       {
-         temp.placePiece( pawn, row + 1, col + 1 );
+         temp.placePiece( PAWN, row + 1, col + 1 );
       }
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -651,13 +659,13 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( rightDiag < 0 && rightDiag != OFFBOARD )
    {
-      temp.placePiece( knight, row + 1, col - 1 );
+      temp.placePiece( KNIGHT, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( queen, row + 1, col - 1 );
+      temp.placePiece( QUEEN, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -666,7 +674,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( this->enpassant.first == row + 1 && this->enpassant.second == col + 1 )
    {
-      temp.placePiece( pawn, row + 1, col + 1 );
+      temp.placePiece( PAWN, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.removePiece( row, col + 1 );
       //temp.enpassant = { -1, -1 };
@@ -682,7 +690,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    board temp = *this;
    if(  this->getSpace( row + 1, col + 2 ) <= 0 &&  this->getSpace( row + 1, col + 2 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row + 1, col + 2 );
+      temp.placePiece( KNIGHT, row + 1, col + 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -693,7 +701,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row + 2, col + 1 ) <= 0 &&  this->getSpace( row + 2, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row + 2, col + 1 );
+      temp.placePiece( KNIGHT, row + 2, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -704,7 +712,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row + 2, col - 1 ) <= 0 &&  this->getSpace( row + 2, col - 1 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row + 2, col - 1 );
+      temp.placePiece( KNIGHT, row + 2, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -715,7 +723,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row + 1, col - 2 ) <= 0 &&  this->getSpace( row + 1, col - 2 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row + 1, col - 2 );
+      temp.placePiece( KNIGHT, row + 1, col - 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -726,7 +734,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row - 1, col - 2 ) <= 0 &&  this->getSpace( row - 1, col - 2 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row - 1, col - 2 );
+      temp.placePiece( KNIGHT, row - 1, col - 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -737,7 +745,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row - 2, col - 1 ) <= 0 &&  this->getSpace( row - 2, col - 1 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row - 2, col - 1 );
+      temp.placePiece( KNIGHT, row - 2, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -748,7 +756,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row - 1, col + 2 ) <= 0 &&  this->getSpace( row - 1, col + 2 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row - 1, col + 2 );
+      temp.placePiece( KNIGHT, row - 1, col + 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -759,7 +767,7 @@ Generator<board> board::generateWhiteKnightMoves( int8_t row, int8_t col ) const
    }
    if(  this->getSpace( row - 2, col + 1 ) <= 0 &&  this->getSpace( row - 2, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( knight, row - 2, col + 1 );
+      temp.placePiece( KNIGHT, row - 2, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -777,7 +785,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -788,7 +796,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -807,7 +815,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -818,7 +826,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -837,7 +845,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -848,7 +856,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -867,7 +875,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -878,7 +886,7 @@ Generator<board> board::generateWhiteBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( bishop, r, c );
+         temp.placePiece( BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -902,11 +910,11 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( rook, r, col );
+         temp.placePiece( ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          /* This bears some explaining: castling rules are more complex than most other chess rules
-         If the rook is moving from his starting square, we want to forbid castling; all other moves have no effect.
+         If the ROOK is moving from his starting square, we want to forbid castling; all other moves have no effect.
          But we don't want extra branches that we can avoid, so instead we do bitwise arithmetic. This statement is equivalent to
          if (row==0 && col==7) temp.gameCtrlFlags |= whiteCanNotCastleKingside;
          */
@@ -920,7 +928,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) < 0 )
       {
-         temp.placePiece( rook, r, col );
+         temp.placePiece( ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -941,7 +949,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( rook, r, col );
+         temp.placePiece( ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -954,7 +962,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) < 0 )
       {
-         temp.placePiece( rook, r, col );
+         temp.placePiece( ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -975,7 +983,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( rook, row, c );
+         temp.placePiece( ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -988,7 +996,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) < 0 )
       {
-         temp.placePiece( rook, row, c );
+         temp.placePiece( ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -1009,7 +1017,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( rook, row, c );
+         temp.placePiece( ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -1022,7 +1030,7 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) < 0 )
       {
-         temp.placePiece( rook, row, c );
+         temp.placePiece( ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= whiteCanNotCastleKingside * (row == 0) * (col == 7);
@@ -1043,11 +1051,11 @@ Generator<board> board::generateWhiteRookMoves( int8_t row, int8_t col ) const
 Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
 {
    board temp = *this;
-   for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row + 1, c = col + 1;; r++, c++ )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1058,7 +1066,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1072,13 +1080,12 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r++; c++;
    }
-   for( auto r = row + 1, c = col - 1;;)
+   for( auto r = row + 1, c = col - 1;; r++, c-- )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1089,7 +1096,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1103,13 +1110,12 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r++; c--;
    }
-   for( auto r = row - 1, c = col - 1;;)
+   for( auto r = row - 1, c = col - 1;; r--, c-- )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1120,7 +1126,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1134,13 +1140,12 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c--;
    }
-   for( auto r = row - 1, c = col + 1;;)
+   for( auto r = row - 1, c = col + 1;; r--, c++ )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1151,7 +1156,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) < 0 && temp.getSpace( r, c ) != OFFBOARD )
       {
-         temp.placePiece( queen, r, c );
+         temp.placePiece( QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1165,13 +1170,12 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c++;
    }
    for( auto r = row + 1; r < 8; r++ )
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( queen, r, col );
+         temp.placePiece( QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1182,7 +1186,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) < 0 )
       {
-         temp.placePiece( queen, r, col );
+         temp.placePiece( QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1201,7 +1205,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( queen, r, col );
+         temp.placePiece( QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1212,7 +1216,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) < 0 )
       {
-         temp.placePiece( queen, r, col );
+         temp.placePiece( QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1231,7 +1235,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( queen, row, c );
+         temp.placePiece( QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1242,7 +1246,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) < 0 )
       {
-         temp.placePiece( queen, row, c );
+         temp.placePiece( QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1261,7 +1265,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( queen, row, c );
+         temp.placePiece( QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1272,7 +1276,7 @@ Generator<board> board::generateWhiteQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) < 0 )
       {
-         temp.placePiece( queen, row, c );
+         temp.placePiece( QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isWhiteInCheck() )
@@ -1294,7 +1298,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    board temp = *this;
    if( this->getSpace( row + 1, col + 1 ) <= 0 && this->getSpace( row + 1, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row + 1, col + 1 );
+      temp.placePiece( KING, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1307,7 +1311,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col ) <= 0 && this->getSpace( row + 1, col ) != OFFBOARD )
    {
-      temp.placePiece( king, row + 1, col );
+      temp.placePiece( KING, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1320,7 +1324,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col - 1 ) <= 0 && this->getSpace( row + 1, col - 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row + 1, col - 1 );
+      temp.placePiece( KING, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1333,7 +1337,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row, col - 1 ) <= 0 && this->getSpace( row, col - 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row, col - 1 );
+      temp.placePiece( KING, row, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1346,7 +1350,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row, col + 1 ) <= 0 && this->getSpace( row, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row, col + 1 );
+      temp.placePiece( KING, row, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1359,7 +1363,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col - 1 ) <= 0 && this->getSpace( row - 1, col - 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row - 1, col - 1 );
+      temp.placePiece( KING, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1372,7 +1376,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col ) <= 0 && this->getSpace( row - 1, col ) != OFFBOARD )
    {
-      temp.placePiece( king, row - 1, col );
+      temp.placePiece( KING, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1385,7 +1389,7 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col + 1 ) <= 0 && this->getSpace( row - 1, col + 1 ) != OFFBOARD )
    {
-      temp.placePiece( king, row - 1, col + 1 );
+      temp.placePiece( KING, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= whiteCanNotCastleKingside;
@@ -1396,14 +1400,14 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
       }
       temp = *this;
    }
-   if( !(this->gameCtrlFlags & whiteCanNotCastleKingside) && !this->getSpace( 0, 5 ) && !this->getSpace( 0, 6 ) && (this->getSpace( 0, 7 ) == rook) ) // kingside castle
+   if( !(this->gameCtrlFlags & whiteCanNotCastleKingside) && !this->getSpace( 0, 5 ) && !this->getSpace( 0, 6 ) && (this->getSpace( 0, 7 ) == ROOK) ) // KINGside castle
    {
-      temp.placePiece( king, row, col + 1 ); // king can't move through check to castle
+      temp.placePiece( KING, row, col + 1 ); // KING can't move through check to castle
       temp.removePiece( row, col );
       if( !temp.isWhiteInCheck() )
       {
-         temp.placePiece( king, row, col + 2 );
-         temp.placePiece( rook, row, col + 1 ); // rook overwrites phantom king
+         temp.placePiece( KING, row, col + 2 );
+         temp.placePiece( ROOK, row, col + 1 ); // ROOK overwrites phantom KING
          if( !temp.isWhiteInCheck() )
          {
             temp.removePiece( 0, 7 );
@@ -1415,14 +1419,14 @@ Generator<board> board::generateWhiteKingMoves( int8_t row, int8_t col ) const
       }
       temp = *this;
    }
-   if( !(this->gameCtrlFlags & whiteCanNotCastleQueenside) && !this->getSpace( 0, 1 ) && !this->getSpace( 0, 2 ) && !this->getSpace( 0, 3 ) && (this->getSpace( 0, 0 ) == rook) )
+   if( !(this->gameCtrlFlags & whiteCanNotCastleQueenside) && !this->getSpace( 0, 1 ) && !this->getSpace( 0, 2 ) && !this->getSpace( 0, 3 ) && (this->getSpace( 0, 0 ) == ROOK) )
    {
-      temp.placePiece( king, row, col - 1 );
+      temp.placePiece( KING, row, col - 1 );
       temp.removePiece( row, col );
       if( !temp.isWhiteInCheck() )
       {
-         temp.placePiece( king, row, col - 2 );
-         temp.placePiece( rook, 0, 3 );
+         temp.placePiece( KING, row, col - 2 );
+         temp.placePiece( ROOK, 0, 3 );
          if( !temp.isWhiteInCheck() )
          {
             temp.removePiece( 0, 0 );
@@ -1442,7 +1446,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    auto oneSpaceFwd = this->getSpace( row - 1, col );
    if( !oneSpaceFwd && row != 1 )
    {
-      temp.placePiece( -pawn, row - 1, col );
+      temp.placePiece( -PAWN, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       //temp.enpassant = { -1, -1 };
@@ -1454,7 +1458,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
          auto twoSpacesFwd = this->getSpace( row - 2, col );
          if( !twoSpacesFwd )
          {
-            temp.placePiece( -pawn, row - 2, col );
+            temp.placePiece( -PAWN, row - 2, col );
             temp.removePiece( row, col );
             temp.gameCtrlFlags ^= whiteToMove;
             //temp.enpassant = { row - 1, col };
@@ -1466,14 +1470,14 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    }
    else if( !oneSpaceFwd )
    {
-      temp.placePiece( -queen, row - 1, col );
+      temp.placePiece( -QUEEN, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       //temp.enpassant = { -1, -1 };
       if( !temp.isBlackInCheck() )
          co_yield temp;
       temp =*this;
-      temp.placePiece( -knight, row - 1, col );
+      temp.placePiece( -KNIGHT, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1483,7 +1487,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    auto leftDiag = this->getSpace( row - 1, col - 1 );
    if( leftDiag > 0 && row != 1 )
    {
-      temp.placePiece( -pawn, row - 1, col - 1 );
+      temp.placePiece( -PAWN, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       //temp.enpassant = { -1, -1 };
@@ -1493,13 +1497,13 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    }
    else if (leftDiag > 0 )
    {
-      temp.placePiece( -knight, row - 1, col - 1 );
+      temp.placePiece( -KNIGHT, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( -queen, row - 1, col - 1 );
+      temp.placePiece( -QUEEN, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -1509,7 +1513,7 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    auto rightDiag = this->getSpace( row - 1, col + 1 );
    if( rightDiag > 0 && row != 1)
    {
-      temp.placePiece( -pawn, row - 1, col + 1 );
+      temp.placePiece( -PAWN, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       //temp.enpassant = { -1, -1 };
@@ -1519,13 +1523,13 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    }
    else if( rightDiag > 0 )
    {
-      temp.placePiece( -knight, row - 1, col - 1 );
+      temp.placePiece( -KNIGHT, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( -queen, row - 1, col - 1 );
+      temp.placePiece( -QUEEN, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -1539,7 +1543,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    board temp =*this;
    if( this->getSpace( row + 1, col + 2 ) >= 0 )
    {
-      temp.placePiece( -knight, row + 1, col + 2 );
+      temp.placePiece( -KNIGHT, row + 1, col + 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1550,7 +1554,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 2, col + 1 ) >= 0 )
    {
-      temp.placePiece( -knight, row + 2, col + 1 );
+      temp.placePiece( -KNIGHT, row + 2, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1561,7 +1565,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 2, col - 1 ) >= 0 )
    {
-      temp.placePiece( -knight, row + 2, col - 1 );
+      temp.placePiece( -KNIGHT, row + 2, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1572,7 +1576,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col - 2 ) >= 0 )
    {
-      temp.placePiece( -knight, row + 1, col - 2 );
+      temp.placePiece( -KNIGHT, row + 1, col - 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1583,7 +1587,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col - 2 ) >= 0 )
    {
-      temp.placePiece( -knight, row - 1, col - 2 );
+      temp.placePiece( -KNIGHT, row - 1, col - 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1594,7 +1598,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 2, col - 1 ) >= 0 )
    {
-      temp.placePiece( -knight, row - 2, col - 1 );
+      temp.placePiece( -KNIGHT, row - 2, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1605,7 +1609,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col + 2 ) >= 0 )
    {
-      temp.placePiece( -knight, row - 1, col + 2 );
+      temp.placePiece( -KNIGHT, row - 1, col + 2 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1616,7 +1620,7 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 2, col + 1 ) >= 0 )
    {
-      temp.placePiece( -knight, row - 2, col + 1 );
+      temp.placePiece( -KNIGHT, row - 2, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isBlackInCheck() )
@@ -1630,11 +1634,11 @@ Generator<board> board::generateBlackKnightMoves( int8_t row, int8_t col ) const
 Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
 {
    board temp =*this;
-   for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row + 1, c = col + 1;; r++, c++ ) // this is disgusting but efficient; probably ought be a while-loop
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1645,7 +1649,7 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1659,13 +1663,13 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r++; c++;
+      
    }
-   for( auto r = row + 1, c = col - 1;;)
+   for( auto r = row + 1, c = col - 1;; r++, c-- )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1676,7 +1680,7 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1690,13 +1694,12 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r++; c--;
    }
-   for( auto r = row - 1, c = col - 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row - 1, c = col - 1;; r--, c--) // this is disgusting but efficient; probably ought be a while-loop
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1707,7 +1710,7 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1721,13 +1724,12 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c--;
    }
-   for( auto r = row - 1, c = col + 1;;)
+   for( auto r = row - 1, c = col + 1;; r--, c++ )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1738,7 +1740,7 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -bishop, r, c );
+         temp.placePiece( -BISHOP, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1752,7 +1754,6 @@ Generator<board> board::generateBlackBishopMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c++;
    }
 }
 
@@ -1763,7 +1764,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( -rook, r, col );
+         temp.placePiece( -ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          // See explanation in findWhiteRookMoves
@@ -1777,7 +1778,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) > 0 )
       {
-         temp.placePiece( -rook, r, col );
+         temp.placePiece( -ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1798,7 +1799,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( -rook, r, col );
+         temp.placePiece( -ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1811,7 +1812,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) > 0 )
       {
-         temp.placePiece( -rook, r, col );
+         temp.placePiece( -ROOK, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1832,7 +1833,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( -rook, row, c );
+         temp.placePiece( -ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1845,7 +1846,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) > 0 )
       {
-         temp.placePiece( -rook, row, c );
+         temp.placePiece( -ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1866,7 +1867,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( -rook, row, c );
+         temp.placePiece( -ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1879,7 +1880,7 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) > 0 )
       {
-         temp.placePiece( -rook, row, c );
+         temp.placePiece( -ROOK, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          temp.gameCtrlFlags |= blackCanNotCastleKingside * (row == 7) * (col == 7);
@@ -1901,11 +1902,11 @@ Generator<board> board::generateBlackRookMoves( int8_t row, int8_t col ) const
 Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
 {
    board temp =*this;
-   for( auto r = row + 1, c = col + 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row + 1, c = col + 1;; r++, c++ )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1916,7 +1917,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1930,13 +1931,12 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r++; c++;
    }
-   for( auto r = row + 1, c = col - 1;;)
+   for( auto r = row + 1, c = col - 1;; r++, c-- )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1947,7 +1947,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1960,14 +1960,13 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       else if( temp.getSpace( r, c ) < 0 )
       {
          break;
-      }
-      r++; c--;
+      }  
    }
-   for( auto r = row - 1, c = col - 1;;) // this is disgusting but efficient; probably ought be a while-loop
+   for( auto r = row - 1, c = col - 1;; r--, c-- )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1978,7 +1977,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -1992,13 +1991,12 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c--;
    }
-   for( auto r = row - 1, c = col + 1;;)
+   for( auto r = row - 1, c = col + 1;; r--, c++ )
    {
       if( temp.getSpace( r, c ) == 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2009,7 +2007,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, c ) > 0 )
       {
-         temp.placePiece( -queen, r, c );
+         temp.placePiece( -QUEEN, r, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2023,13 +2021,12 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       {
          break;
       }
-      r--; c++;
    }
    for( auto r = row + 1; r < 8; r++ )
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( -queen, r, col );
+         temp.placePiece( -QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2040,7 +2037,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) > 0 )
       {
-         temp.placePiece( -queen, r, col );
+         temp.placePiece( -QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2059,7 +2056,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( r, col ) == 0 )
       {
-         temp.placePiece( -queen, r, col );
+         temp.placePiece( -QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2070,7 +2067,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( r, col ) > 0 )
       {
-         temp.placePiece( -queen, r, col );
+         temp.placePiece( -QUEEN, r, col );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2089,7 +2086,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( -queen, row, c );
+         temp.placePiece( -QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2100,7 +2097,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) > 0 )
       {
-         temp.placePiece( -queen, row, c );
+         temp.placePiece( -QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2119,7 +2116,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
    {
       if( temp.getSpace( row, c ) == 0 )
       {
-         temp.placePiece( -queen, row, c );
+         temp.placePiece( -QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2130,7 +2127,7 @@ Generator<board> board::generateBlackQueenMoves( int8_t row, int8_t col ) const
       }
       else if( temp.getSpace( row, c ) > 0 )
       {
-         temp.placePiece( -queen, row, c );
+         temp.placePiece( -QUEEN, row, c );
          temp.removePiece( row, col );
          temp.gameCtrlFlags ^= whiteToMove;
          if( !temp.isBlackInCheck() )
@@ -2152,7 +2149,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    board temp =*this;
    if( this->getSpace( row + 1, col + 1 ) >= 0 )
    {
-      temp.placePiece( -king, row + 1, col + 1 );
+      temp.placePiece( -KING, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2165,7 +2162,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col ) >= 0 )
    {
-      temp.placePiece( -king, row + 1, col );
+      temp.placePiece( -KING, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2178,7 +2175,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row + 1, col - 1 ) >= 0 )
    {
-      temp.placePiece( -king, row + 1, col - 1 );
+      temp.placePiece( -KING, row + 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2191,7 +2188,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row, col - 1 ) >= 0 )
    {
-      temp.placePiece( -king, row, col - 1 );
+      temp.placePiece( -KING, row, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2204,7 +2201,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row, col + 1 ) >= 0 )
    {
-      temp.placePiece( -king, row, col + 1 );
+      temp.placePiece( -KING, row, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2217,7 +2214,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col - 1 ) >= 0 )
    {
-      temp.placePiece( -king, row - 1, col - 1 );
+      temp.placePiece( -KING, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2230,7 +2227,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col ) >= 0 )
    {
-      temp.placePiece( -king, row - 1, col );
+      temp.placePiece( -KING, row - 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2243,7 +2240,7 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
    }
    if( this->getSpace( row - 1, col + 1 ) >= 0 )
    {
-      temp.placePiece( -king, row - 1, col + 1 );
+      temp.placePiece( -KING, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       temp.gameCtrlFlags |= blackCanNotCastleKingside;
@@ -2254,14 +2251,14 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
       }
       temp =*this;
    }
-   if( !(this->gameCtrlFlags & blackCanNotCastleKingside) && !this->getSpace( 7, 5 ) && !this->getSpace( 7, 6 ) && (this->getSpace( 7, 7 ) == -rook) ) // kingside castle
+   if( !(this->gameCtrlFlags & blackCanNotCastleKingside) && !this->getSpace( 7, 5 ) && !this->getSpace( 7, 6 ) && (this->getSpace( 7, 7 ) == -ROOK) ) // KINGside castle
    {
-      temp.placePiece( -king, row, col + 1 ); // king can't move through check to castle
+      temp.placePiece( -KING, row, col + 1 ); // KING can't move through check to castle
       temp.removePiece( row, col );
       if( !temp.isBlackInCheck() )
       {
-         temp.placePiece( -king, row, col + 2 );
-         temp.placePiece( -rook, row, col + 1 ); 
+         temp.placePiece( -KING, row, col + 2 );
+         temp.placePiece( -ROOK, row, col + 1 ); 
          if( !temp.isBlackInCheck() )
          {
             temp.removePiece( 7, 7 );
@@ -2274,14 +2271,14 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
       }
       temp =*this;
    }
-   if( !(this->gameCtrlFlags & blackCanNotCastleQueenside) && !this->getSpace( 7, 1 ) && !this->getSpace( 7, 2 ) && !this->getSpace( 7, 3 ) && (this->getSpace( 7, 0 ) == -rook) )
+   if( !(this->gameCtrlFlags & blackCanNotCastleQueenside) && !this->getSpace( 7, 1 ) && !this->getSpace( 7, 2 ) && !this->getSpace( 7, 3 ) && (this->getSpace( 7, 0 ) == -ROOK) )
    {
-      temp.placePiece( -king, row, col - 1 );
+      temp.placePiece( -KING, row, col - 1 );
       temp.removePiece( row, col );
       if( !temp.isBlackInCheck() )
       {
-         temp.placePiece( -king, row, col - 2 );
-         temp.placePiece( -rook, 7, 3 );
+         temp.placePiece( -KING, row, col - 2 );
+         temp.placePiece( -ROOK, 7, 3 );
          if( !temp.isBlackInCheck() )
          {
             temp.removePiece( 7, 0 );
@@ -2298,27 +2295,27 @@ Generator<board> board::generateBlackKingMoves( int8_t row, int8_t col ) const
 board board::startingboard()
 {
    board b;
-   b.placePiece( rook, 0, 0 );
-   b.placePiece( knight, 0, 1 );
-   b.placePiece( bishop, 0, 2 );
-   b.placePiece( queen, 0, 3 );
-   b.placePiece( king, 0, 4 );
-   b.placePiece( bishop, 0, 5 );
-   b.placePiece( knight, 0, 6 );
-   b.placePiece( rook, 0, 7 );
+   b.placePiece( ROOK, 0, 0 );
+   b.placePiece( KNIGHT, 0, 1 );
+   b.placePiece( BISHOP, 0, 2 );
+   b.placePiece( QUEEN, 0, 3 );
+   b.placePiece( KING, 0, 4 );
+   b.placePiece( BISHOP, 0, 5 );
+   b.placePiece( KNIGHT, 0, 6 );
+   b.placePiece( ROOK, 0, 7 );
    for( uint8_t col = 0; col < 8; col++ )
    {
-      b.placePiece( pawn, 1, col );
-      b.placePiece( -pawn, 6, col );
+      b.placePiece( PAWN, 1, col );
+      b.placePiece( -PAWN, 6, col );
    }
-   b.placePiece( -rook, 7, 0 );
-   b.placePiece( -knight, 7, 1 );
-   b.placePiece( -bishop, 7, 2 );
-   b.placePiece( -queen, 7, 3 );
-   b.placePiece( -king, 7, 4 );
-   b.placePiece( -bishop, 7, 5 );
-   b.placePiece( -knight, 7, 6 );
-   b.placePiece( -rook, 7, 7 );
+   b.placePiece( -ROOK, 7, 0 );
+   b.placePiece( -KNIGHT, 7, 1 );
+   b.placePiece( -BISHOP, 7, 2 );
+   b.placePiece( -QUEEN, 7, 3 );
+   b.placePiece( -KING, 7, 4 );
+   b.placePiece( -BISHOP, 7, 5 );
+   b.placePiece( -KNIGHT, 7, 6 );
+   b.placePiece( -ROOK, 7, 7 );
    return b;
 }
 
