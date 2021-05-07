@@ -10,7 +10,7 @@ void printchessboard( chessbot::board b )
 	{
 		for( int j = 0; j < 8; j++ )
 		{
-			std::cout << static_cast<int>(b.getSpace( i, j )) << " ";
+			std::cout << static_cast<int>(b.getSpace( j, i )) << " ";
 		}
 		std::cout << "\n";
 	}
@@ -22,7 +22,7 @@ std::array<int, 64> getCurrentBoard()
 	std::array<int, 64> currboard;
 	for( int i = 0; i < 64; i++ )
 	{
-		currboard.at( i ) = game::currentBoard.getSpace( i / 8, i % 8 );
+		currboard.at( i ) = game::currentBoard.getSpace( i % 8, i / 8 );
 	}
 	return currboard;
 }
@@ -64,7 +64,7 @@ std::array<int, 64> getAutomaticMove( int depth )
 	std::array<int, 64> currboard;
 	for( int i = 0; i < 64; i++ )
 	{
-		currboard.at( i ) = bestmove.getSpace( i / 8, i % 8 );
+		currboard.at( i ) = bestmove.getSpace( i % 8, i / 8 );
 	}
 	return currboard;
 }
@@ -80,14 +80,15 @@ bool makeAutomaticMove(int depth)
 	}
 	while( gen )
 	{
-		fmoves.push_back( std::async( alphabeta, gen(), 0, depth, std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max() ) );
+		auto b = gen();
+		//printchessboard( b );
+		fmoves.push_back( std::async( alphabeta, b, 0, depth, std::numeric_limits<int>::lowest(), std::numeric_limits<int>::max() ) );
 	}
 	board bestmove;
 	bestmove.heuristicVal = game::currentBoard.gameCtrlFlags & whiteToMove ? std::numeric_limits<int>::lowest() : std::numeric_limits<int>::max();
 	for( auto& m : fmoves )
 	{
 		board b = m.get();
-		std::cout << b.heuristicVal << "\n";
 		if( game::currentBoard.gameCtrlFlags & whiteToMove )
 		{
 			if( b.heuristicVal > bestmove.heuristicVal )

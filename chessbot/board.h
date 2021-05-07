@@ -31,6 +31,8 @@ constexpr unsigned char blackCanNotCastleKingside = 0x08;
 constexpr unsigned char blackCanNotCastleQueenside = 0x10;
 constexpr unsigned char gameOver = 0x20;
 constexpr int8_t OFFBOARD = -128;
+//using row_t = int8_t;
+//using col_t = int8_t;
 
 class board
 {
@@ -44,10 +46,10 @@ public:
    bool operator==( board b );
    bool operator==( board&& b );
 
-   void placePiece( int8_t id, int8_t row, int8_t col );
-   void removePiece( int8_t row, int8_t col );
+   void placePiece( int8_t id, int8_t col, int8_t row );
+   void removePiece( int8_t col, int8_t row );
 
-   int8_t getSpace( int8_t row, int8_t col ) const;
+   int8_t getSpace( int8_t col, int8_t row ) const;
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
 
@@ -61,18 +63,18 @@ protected:
    
    // helper functions to make getLegalMoves readable
 
-   Generator<board> generateWhitePawnMoves(int8_t row, int8_t col ) const;
-   Generator<board> generateBlackPawnMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateWhiteKnightMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateBlackKnightMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateWhiteBishopMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateBlackBishopMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateWhiteRookMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateBlackRookMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateWhiteQueenMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateBlackQueenMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateWhiteKingMoves( int8_t row, int8_t col ) const;
-   Generator<board> generateBlackKingMoves( int8_t row, int8_t col ) const;
+   Generator<board> generateWhitePawnMoves(int8_t col, int8_t row ) const;
+   Generator<board> generateBlackPawnMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateWhiteKnightMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateBlackKnightMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateWhiteBishopMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateBlackBishopMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateWhiteRookMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateBlackRookMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateWhiteQueenMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateBlackQueenMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateWhiteKingMoves( int8_t col, int8_t row ) const;
+   Generator<board> generateBlackKingMoves( int8_t col, int8_t row ) const;
 };
 
 // Pieces are represented as constant int8s with unique identifiers

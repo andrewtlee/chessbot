@@ -37,7 +37,7 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = False
+        self.AIisWhite = True
         self.AIisBlack = True
         self.waitingOnPlayer = False
         self.windowClosed = False
@@ -112,9 +112,9 @@ class Chess:
             else:
                 color = "white"
 
-        for row in range(8):
-            for col in range(8):
-                c = self.getSpace(row, col)
+        for col in range(8):
+            for row in range(8):
+                c = self.getSpace(col, row)
                 self.pieceHandles.append(self.canvas.create_text(col*symbolSize + symbolSize/2, (7-row)*symbolSize + symbolSize/2, font="* 60", text=piecesAsUnicode[c]))
 
     def drawBoard(self):
@@ -122,9 +122,9 @@ class Chess:
             self.canvas.delete(p)
         self.pieceHandles = []
 
-        for row in range(8):
-            for col in range(8):
-                c = self.getSpace(row, col)
+        for col in range(8):
+            for row in range(8):
+                c = self.getSpace(col, row)
                 self.pieceHandles.append(self.canvas.create_text(col*symbolSize + symbolSize/2, (7-row)*symbolSize + symbolSize/2, font="* 60", text=piecesAsUnicode[c]))
                 
     def onClick(self, event):
@@ -133,7 +133,7 @@ class Chess:
             logicalPosition = [int(gridPosition[0] / (sizeOfBoard / 8)), int(gridPosition[1] / (sizeOfBoard /8))]
             self.logicalClickStack[1] = self.logicalClickStack[0]
             self.logicalClickStack[0] = [7-logicalPosition[1], logicalPosition[0]]
-            spaceval = self.getSpace(self.logicalClickStack[1][0], self.logicalClickStack[1][1])
+            spaceval = self.getSpace(self.logicalClickStack[1][1], self.logicalClickStack[1][0])
             self.prospectiveMovePiece = spaceval
             if self.prospectiveMovePiece != -128:
                 self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = self.prospectiveMovePiece
@@ -156,13 +156,13 @@ class Chess:
         self.window.destroy()
         self.windowClosed = True
 
-    def getSpace(self, row: int, col: int)->int:
+    def getSpace(self, col: int, row: int)->int:
         if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
             return self.board[ col + 8 * row ]
         else:
             return OFFBOARD
 
-def getSpace(row: int, col: int, board: list)->int:
+def getSpace(col: int, row: int, board: list)->int:
         if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
             return board[ col + 8 * row ]
         else:
@@ -171,7 +171,7 @@ def getSpace(row: int, col: int, board: list)->int:
 def printBoardToTerminal(board: list):
     for i in range(7, -1, -1):
         for j in range(8):
-            c = getSpace(i,j, board)
+            c = getSpace(j,i, board)
             print(f"{c:3}", end="")
         print()
     
@@ -179,3 +179,7 @@ def printBoardToTerminal(board: list):
 if __name__ == "__main__":
     game = Chess()
     game.mainloop()
+    #b = chessbot.getCurrentBoard()
+    #chessbot.makeAutomaticMove(1)
+    #b = chessbot.getCurrentBoard()
+    #printBoardToTerminal(b)
