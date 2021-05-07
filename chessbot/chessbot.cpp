@@ -109,27 +109,19 @@ bool makeAutomaticMove(int depth)
 	return true; // report success
 }
 
-bool makeManualMove( std::array<int, 64> move )
+bool makeManualMove( std::string UCImove )
 {
 	auto legalMoves = game::currentBoard.getLegalMoves();
 	if( legalMoves.empty() )
 	{
 		game::currentBoard.gameCtrlFlags |= gameOver;
-		return false; // no legal moves
+		return false;
 	}
 	for( auto& m : legalMoves )
 	{
-		bool match = true;
-		for( int i = 0; i < 64; i++ )
+		//std::cout << m.getUCIMove() << "\n";
+		if( UCImove == m.getUCIMove() )
 		{
-			if( move.at( i ) != m.spaces.at( i ) )
-			{
-				match = false;
-				break;
-			}
-		}
-		if( match )
-		{	
 			game::currentBoard = m;
 			game::boardHistory.push_back( game::currentBoard );
 			return true;

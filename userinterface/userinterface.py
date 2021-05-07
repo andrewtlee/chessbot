@@ -15,6 +15,7 @@ symbolSize = (sizeOfBoard / 8)
 symbolThickness = 50
 piecesAsUnicode = {0: "", 1: "\u2659", 2: "\u2658", 3:"\u2657", 5: "\u2656", 8: "\u2655", 9: "\u2654",
                    -1: "\u265F", -2: "\u265E", -3: "\u265D", -5: "\u265C", -8: "\u265B", -9: "\u265A"}
+columnsAsLetters = { 0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h", -1: ""}
 whiteToMove = 0x01
 OFFBOARD = -128
 
@@ -37,8 +38,8 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = True
-        self.AIisBlack = True
+        self.AIisWhite = False
+        self.AIisBlack = False
         self.waitingOnPlayer = False
         self.windowClosed = False
         self.logicalClickStack = [[-1, -1], [-1,-1]]
@@ -132,25 +133,15 @@ class Chess:
             gridPosition = [event.x, event.y]
             logicalPosition = [int(gridPosition[0] / (sizeOfBoard / 8)), int(gridPosition[1] / (sizeOfBoard /8))]
             self.logicalClickStack[1] = self.logicalClickStack[0]
-            self.logicalClickStack[0] = [7-logicalPosition[1], logicalPosition[0]]
-            spaceval = self.getSpace(self.logicalClickStack[1][1], self.logicalClickStack[1][0])
-            self.prospectiveMovePiece = spaceval
-            if self.prospectiveMovePiece != -128:
-                self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = self.prospectiveMovePiece
-                self.prospectiveMoveBoard[self.logicalClickStack[1][1] + 8*self.logicalClickStack[1][0]] = 0
-                if abs(self.prospectiveMovePiece) == 9:
-                    if self.logicalClickStack[0][1] - self.logicalClickStack[1][1] == 2: # castle kingside
-                        self.prospectiveMoveBoard[self.logicalClickStack[0][1] - 1  + 8*self.logicalClickStack[1][0]] = 5 if self.gameCtrlFlags & whiteToMove else -5
-                        self.prospectiveMoveBoard[7 + 8*self.logicalClickStack[1][0]] = 0
-                    elif self.logicalClickStack[0][1] - self.logicalClickStack[1][1] == -2: # castle queenside
-                        self.prospectiveMoveBoard[self.logicalClickStack[0][1] + 1  + 8*self.logicalClickStack[0][0]] = 5 if self.gameCtrlFlags & whiteToMove else -5
-                        self.prospectiveMoveBoard[0 + 8*self.logicalClickStack[1][0]] = 0
-                if self.prospectiveMovePiece == 1 and self.logicalClickStack[0][0] == 7: # pawn promotion (queen only)
-                    self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = 8
-                elif self.prospectiveMovePiece == -1 and self.logicalClickStack[0][0] == 0:
-                    self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = -8
-                self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
-                self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+            self.logicalClickStack[0] = [logicalPosition[0], 7-logicalPosition[1]]
+            self.waitingOnPlayer = not chessbot.makeManualMove(self.convertLogicalPositionsToUCI(self.logicalClickStack[0], self.logicalClickStack[1]))
+            if self.waitingOnPlayer:
+                 chessbot.makeManualMove(self.convertLogicalPositionsToUCI(self.logicalClickStack[0], self.logicalClickStack[1])+'q')
+             
+    
+    def convertLogicalPositionsToUCI(self, clickLast: list, clickFirst: list)->str:
+        return "".join([columnsAsLetters[clickFirst[0]], str(clickFirst[1]+1), columnsAsLetters[clickLast[0]], str(clickLast[1]+1)])
+        
 
     def onClose(self):
         self.window.destroy()

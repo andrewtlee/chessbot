@@ -19,6 +19,7 @@
 #include <array>
 #include <stdint.h>
 #include <vector>
+#include <string>
 #include "generator.h"
 
 namespace chessbot
@@ -52,14 +53,16 @@ public:
    int8_t getSpace( int8_t col, int8_t row ) const;
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
+   std::string getUCIMove() const;
 
    unsigned char gameCtrlFlags = whiteToMove;
    int heuristicVal = 0;
    int8_t depthExplored = 0;
    std::array<int8_t, 64> spaces{ 0 };
+
 protected:
    std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
-   std::array<char, 4> UCInotationMove{ 0 };
+   std::array<char, 5> UCInotationMove{ 0 };
    
    // helper functions to make getLegalMoves readable
 

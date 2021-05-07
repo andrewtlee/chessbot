@@ -21,7 +21,7 @@ std::array<int, 64> getCurrentBoard();
 unsigned char getGameCtrlFlags();
 std::array<int, 64> getAutomaticMove(int depth);
 bool makeAutomaticMove(int depth);
-bool makeManualMove( std::array<int, 64> move );
+bool makeManualMove( std::string UCImove );
 bool whiteCheckmated();
 bool blackCheckmated();
 bool stalemate();
