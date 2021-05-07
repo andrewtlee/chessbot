@@ -45,8 +45,7 @@ std::array<int, 64> getAutomaticMove( int depth )
 	for( auto& m : fmoves )
 	{
 		board b = m.get();
-		
-		//std::cout << v << " ";
+		std::cout << b.heuristicVal << "\n";
 		if( game::currentBoard.gameCtrlFlags & whiteToMove )
 		{
 			if( b.heuristicVal > bestmove.heuristicVal )
@@ -88,6 +87,7 @@ bool makeAutomaticMove(int depth)
 	for( auto& m : fmoves )
 	{
 		board b = m.get();
+		std::cout << b.heuristicVal << "\n";
 		if( game::currentBoard.gameCtrlFlags & whiteToMove )
 		{
 			if( b.heuristicVal > bestmove.heuristicVal )
@@ -151,7 +151,7 @@ bool stalemate()
 {
 	return (!game::currentBoard.getLegalMoves().size() && !game::currentBoard.isWhiteInCheck() && (game::currentBoard.gameCtrlFlags & whiteToMove))
 	|| (!game::currentBoard.getLegalMoves().size() && !game::currentBoard.isBlackInCheck() && !(game::currentBoard.gameCtrlFlags & whiteToMove));
-		
+	return false;
 }
 
 bool thriceRepetition()

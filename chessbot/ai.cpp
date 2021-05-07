@@ -141,6 +141,11 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
       b.heuristicVal = std::numeric_limits<int>::max() - depth * 10000; // white wins
       return b;
    }
+   else if( !gen )
+   {
+      b.heuristicVal = 0;
+      return b;
+   }
    if( b.gameCtrlFlags & whiteToMove )
    {
       b.heuristicVal = std::numeric_limits<int>::lowest();
@@ -171,6 +176,42 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
       }
       return b;
    }
+}
+
+board negamax( board b, int depth, int maxdepth, int alpha, int beta )
+{
+   if( depth == maxdepth )
+   {
+      b.heuristicVal = getHeuristic( b );
+      return b;
+   }
+   auto gen = b.getMove();
+   if( !gen && b.isWhiteInCheck() ) // white is in checkmate
+   {
+      b.heuristicVal = std::numeric_limits<int>::lowest() - depth * 10000;
+      return b;
+   }
+   else if( !gen && b.isBlackInCheck() )
+   {
+      b.heuristicVal = std::numeric_limits<int>::max() - depth * 10000; // white wins
+      return b;
+   }
+   else if( !gen )
+   {
+      b.heuristicVal = 0;
+      return b;
+   }
+   b.heuristicVal = std::numeric_limits<int>::lowest();
+   while( gen )
+   {
+      b.heuristicVal = std::max( b.heuristicVal, -negamax( gen(), depth + 1, maxdepth, -beta, -alpha ).heuristicVal);
+      alpha = std::max( alpha, b.heuristicVal );
+      if( alpha > beta )
+      {
+         break;
+      }
+   }
+   return b;
 }
 
 } // namespace chessbot

@@ -16,6 +16,9 @@ symbolThickness = 50
 piecesAsUnicode = {0: "", 1: "\u2659", 2: "\u2658", 3:"\u2657", 5: "\u2656", 8: "\u2655", 9: "\u2654",
                    -1: "\u265F", -2: "\u265E", -3: "\u265D", -5: "\u265C", -8: "\u265B", -9: "\u265A"}
 whiteToMove = 0x01
+OFFBOARD = -128
+
+times = []
 
 class Chess:
     def __init__(self):
@@ -35,42 +38,58 @@ class Chess:
         self.whiteWins = False
         self.blackWins = False
         self.AIisWhite = False
-        self.AIisBlack = False
+        self.AIisBlack = True
         self.waitingOnPlayer = False
         self.windowClosed = False
         self.logicalClickStack = [[-1, -1], [-1,-1]]
         self.prospectiveMoveBoard = self.board[:]
-        self.prospectiveMovePiece = -128
+        self.prospectiveMovePiece = OFFBOARD
 
     def mainloop(self):
         while not self.windowClosed:
             if self.gameCtrlFlags & whiteToMove:
                 if self.AIisWhite:
-                    #start = time.time()
-                    chessbot.makeAutomaticMove(6)
-                    #end = time.time()
+                    start = time.time()
+                    chessbot.makeAutomaticMove(5)
+                    end = time.time()
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                    #print(f"{end-start} spent generating move tree")
-                    
+                    print(f"{end-start} spent generating move tree") 
+                    times.append(end-start)
                 else:
                     self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
                         self.logicalClickStack = [[-1, -1], [-1,-1]]
                         self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                        self.prospectiveMovePiece = -128                   
+                        self.prospectiveMovePiece = OFFBOARD                   
             else:
                 if self.AIisBlack:
-                    chessbot.makeAutomaticMove(6)
+                    start = time.time()
+                    chessbot.makeAutomaticMove(5)
+                    end = time.time()
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                    times.append(end-start)
                 else:
                     self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
                         self.logicalClickStack = [[-1, -1], [-1,-1]]
                         self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                        self.prospectiveMovePiece = -128
+                        self.prospectiveMovePiece = OFFBOARD
             self.board = chessbot.getCurrentBoard()
             self.gameCtrlFlags = chessbot.getGameCtrlFlags()
             self.drawBoard()
+            if chessbot.blackCheckmated():
+                self.window.bell()
+                tkinter.messagebox.showinfo("Game Over", "White Wins!")
+                exit(0)
+            elif chessbot.whiteCheckmated():
+                self.window.bell()
+                tkinter.messagebox.showinfo("Game Over", "Black Wins!")
+                exit(0)
+            elif chessbot.stalemate() or chessbot.thriceRepetition():
+                self.window.bell()
+                tkinter.messagebox.showinfo("Game Over", "The game is a draw!")
+                print(sum(times)/len(times))
+                exit(0)
             self.window.update_idletasks()
             self.window.update()
             time.sleep(0.25)
@@ -79,10 +98,10 @@ class Chess:
         color = "white"
         for y in range(8):
             for x in range(8):
-                x1 = x*sizeOfBoard/8
-                y1 = y*sizeOfBoard/8
-                x2 = x1+sizeOfBoard/8
-                y2 = y1+sizeOfBoard/8
+                x1 = x*symbolSize
+                y1 = y*symbolSize
+                x2 = x1+symbolSize
+                y2 = y1+symbolSize
                 self.canvas.create_rectangle((x1, y1, x2, y2), fill=color)
                 if color == "white":
                     color = "green"
@@ -129,10 +148,8 @@ class Chess:
                 if self.prospectiveMovePiece == 1 and self.logicalClickStack[0][0] == 7: # pawn promotion (queen only)
                     self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = 8
                 elif self.prospectiveMovePiece == -1 and self.logicalClickStack[0][0] == 0:
-                    #print("AI move:"); printBoardToTerminal(chessbot.getAutomaticMove(3))
                     self.prospectiveMoveBoard[logicalPosition[0] + 8 * (7-logicalPosition[1])] = -8
                 self.waitingOnPlayer = not chessbot.makeManualMove(self.prospectiveMoveBoard)
-                #print("Self board"); printBoardToTerminal(self.prospectiveMoveBoard)
                 self.prospectiveMoveBoard = chessbot.getCurrentBoard()
 
     def onClose(self):
@@ -143,19 +160,15 @@ class Chess:
         if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
             return self.board[ col + 8 * row ]
         else:
-            return -128
+            return OFFBOARD
 
 def getSpace(row: int, col: int, board: list)->int:
         if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
             return board[ col + 8 * row ]
         else:
-            return -128
+            return OFFBOARD
 
 def printBoardToTerminal(board: list):
-    piecesAsUnicode = {1: "\u2659", 2: "\u2658", 3:"\u2657", 5: "\u2656", 8: "\u2655", 9: "\u2654",
-                       -1: "\u265F", -2: "\u265E", -3: "\u265D", -5: "\u265C", -8: "\u265B", -9: "\u265B",
-                       0: "  "}
-    boardAsStr = "";
     for i in range(7, -1, -1):
         for j in range(8):
             c = getSpace(i,j, board)

@@ -6,7 +6,7 @@
 * The logic in getMove is fairly simple, and the helper functions hide the pain.
 */
 #include "board.h"
-
+#include <iostream>
 namespace chessbot
 {
 
@@ -568,7 +568,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
 {
    board temp = *this;
    auto oneSpaceFwd = this->getSpace( row + 1, col );
-   if( !oneSpaceFwd && row != 7 )
+   if( !oneSpaceFwd && row != 6 )
    {
       temp.placePiece( PAWN, row + 1, col );
       temp.removePiece( row, col );
@@ -597,6 +597,7 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( QUEEN, row + 1, col );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
+      //std::cout << "Pawn should promote\n";
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
@@ -659,13 +660,13 @@ Generator<board> board::generateWhitePawnMoves( int8_t row, int8_t col ) const
    }
    else if( rightDiag < 0 && rightDiag != OFFBOARD )
    {
-      temp.placePiece( KNIGHT, row + 1, col - 1 );
+      temp.placePiece( KNIGHT, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( QUEEN, row + 1, col - 1 );
+      temp.placePiece( QUEEN, row + 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
       if( !temp.isWhiteInCheck() )
@@ -1500,13 +1501,13 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
       temp.placePiece( -KNIGHT, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isWhiteInCheck() )
+      if( !temp.isBlackInCheck() )
          co_yield temp;
       temp = *this;
       temp.placePiece( -QUEEN, row - 1, col - 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isWhiteInCheck() )
+      if( !temp.isBlackInCheck() )
          co_yield temp;
       temp = *this;
    }
@@ -1523,16 +1524,16 @@ Generator<board> board::generateBlackPawnMoves( int8_t row, int8_t col ) const
    }
    else if( rightDiag > 0 )
    {
-      temp.placePiece( -KNIGHT, row - 1, col - 1 );
+      temp.placePiece( -KNIGHT, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isWhiteInCheck() )
+      if( !temp.isBlackInCheck() )
          co_yield temp;
       temp = *this;
-      temp.placePiece( -QUEEN, row - 1, col - 1 );
+      temp.placePiece( -QUEEN, row - 1, col + 1 );
       temp.removePiece( row, col );
       temp.gameCtrlFlags ^= whiteToMove;
-      if( !temp.isWhiteInCheck() )
+      if( !temp.isBlackInCheck() )
          co_yield temp;
       temp = *this;
    }

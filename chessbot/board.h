@@ -53,9 +53,11 @@ public:
 
    unsigned char gameCtrlFlags = whiteToMove;
    int heuristicVal = 0;
+   int8_t depthExplored = 0;
    std::array<int8_t, 64> spaces{ 0 };
 protected:
    std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
+   std::array<char, 4> UCInotationMove{ 0 };
    
    // helper functions to make getLegalMoves readable
 
