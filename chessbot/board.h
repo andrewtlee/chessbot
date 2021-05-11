@@ -17,7 +17,7 @@
 */
 # pragma once
 #include <array>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <string>
 #include "generator.h"
@@ -54,13 +54,14 @@ public:
    bool isWhiteInCheck() const;
    bool isBlackInCheck() const;
    std::string getUCIMove() const;
+   uint32_t hashFunction() const;
 
    unsigned char gameCtrlFlags = whiteToMove;
    int heuristicVal = 0;
-   int8_t depthExplored = 0;
-   std::array<int8_t, 64> spaces{ 0 };
+   int8_t depthEncountered = 0;
 
 protected:
+   std::array<int8_t, 64> spaces{ 0 };
    std::pair<int8_t, int8_t> enpassant = { OFFBOARD, OFFBOARD };
    std::array<char, 5> UCInotationMove{ 0 };
    

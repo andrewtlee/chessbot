@@ -38,8 +38,8 @@ class Chess:
         self.resetBoard = False
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = False
-        self.AIisBlack = False
+        self.AIisWhite = True
+        self.AIisBlack = True
         self.waitingOnPlayer = False
         self.windowClosed = False
         self.logicalClickStack = [[-1, -1], [-1,-1]]
@@ -51,7 +51,7 @@ class Chess:
             if self.gameCtrlFlags & whiteToMove:
                 if self.AIisWhite:
                     start = time.time()
-                    chessbot.makeAutomaticMove(5)
+                    chessbot.makeAutomaticMove(6)
                     end = time.time()
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
                     print(f"{end-start} spent generating move tree") 
@@ -65,7 +65,7 @@ class Chess:
             else:
                 if self.AIisBlack:
                     start = time.time()
-                    chessbot.makeAutomaticMove(5)
+                    chessbot.makeAutomaticMove(6)
                     end = time.time()
                     self.prospectiveMoveBoard = chessbot.getCurrentBoard()
                     times.append(end-start)

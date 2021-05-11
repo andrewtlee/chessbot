@@ -243,6 +243,18 @@ std::string board::getUCIMove() const
    }
    return ret;
 }
+
+// Rough implementation of FNV-1a
+uint32_t board::hashFunction() const
+{
+   auto h = uint32_t{ 0x811c9dc5 };
+   for( int i = 0; i < this->spaces.size(); i++ )
+   {
+      h = (h ^ this->spaces.at( i )) * 0x01000193;
+   }
+   h = (h ^ this->gameCtrlFlags) * 0x01000193;
+   return h % 999'529;
+}
  // This version of getMove() goes through the board once and finds the moves of the pieces it comes across, in order
 /*Generator<board> board::getMove()
 {

@@ -1,5 +1,7 @@
 #include "ai.h"
 #include "board.h"
+#include "transpositiontable.h"
+//#include <mutex>
 #include <iostream>
 
 namespace chessbot
@@ -11,6 +13,8 @@ constexpr int BISHOP_VALUE = 30;
 constexpr int ROOK_VALUE = 50;
 constexpr int QUEEN_VALUE = 90;
 
+//std::mutex mtx;
+transpositionTable tTable;
 // For now, the heuristic is a naive piece count
 int getHeuristic( const board& b )
 {
@@ -149,17 +153,27 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
    if( b.gameCtrlFlags & whiteToMove )
    {
       b.heuristicVal = std::numeric_limits<int>::lowest();
-      //std::sort( moves.begin(), moves.end(), []( board x, board y ) {return x.heuristicVal > y.heuristicVal; } );
       while( gen )
       {
-         b.heuristicVal = std::max( b.heuristicVal, alphabeta( gen(), depth + 1, maxdepth, alpha, beta ).heuristicVal );
+         board temp = gen();
+         auto qresult = tTable.queryTable( temp );
+         auto intable = qresult.first;
+         if( intable && qresult.second.depthEncountered <= depth )
+         {
+            temp = qresult.second;
+            b.heuristicVal = std::max( b.heuristicVal, temp.heuristicVal );
+         }
+         else
+         {
+            b.heuristicVal = std::max( b.heuristicVal, alphabeta( temp, depth + 1, maxdepth, alpha, beta ).heuristicVal );
+         }
+         
          alpha = std::max( alpha, b.heuristicVal );
          if( alpha >= beta )
          {
             break;
          }
       }
-      return b;
    }
    else
    {
@@ -167,15 +181,27 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
       //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       while( gen )
       {
-         b.heuristicVal = std::min( b.heuristicVal, alphabeta( gen(), depth + 1, maxdepth, alpha, beta ).heuristicVal );
+         auto temp = gen();
+         auto qresult = tTable.queryTable( temp );
+         if( qresult.first && qresult.second.depthEncountered <= depth )
+         {
+            temp = qresult.second;
+            b.heuristicVal = std::min( b.heuristicVal, temp.heuristicVal );
+         }
+         else 
+         {
+            b.heuristicVal = std::min( b.heuristicVal, alphabeta( temp, depth + 1, maxdepth, alpha, beta ).heuristicVal );
+         }
          beta = std::min( beta, b.heuristicVal );
          if( beta <= alpha )
          {
             break;
          }
       }
-      return b;
    }
+   b.depthEncountered = depth;
+   tTable.addBoard( b );
+   return b;
 }
 
 board negamax( board b, int depth, int maxdepth, int alpha, int beta )
