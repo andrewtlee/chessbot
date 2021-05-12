@@ -9,6 +9,7 @@ import chessbot
 import tkinter as tk
 import tkinter.messagebox
 import time
+import random
 
 sizeOfBoard = 720
 symbolSize = (sizeOfBoard / 8)
@@ -18,6 +19,26 @@ piecesAsUnicode = {0: "", 1: "\u2659", 2: "\u2658", 3:"\u2657", 5: "\u2656", 8: 
 columnsAsLetters = { 0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h", -1: ""}
 whiteToMove = 0x01
 OFFBOARD = -128
+
+class Node:
+    def __init__(self, data = "") -> None:
+        self.next = []
+        self.move = data
+
+    def addChild(self, data):
+        found = -1
+        for i, n in enumerate(self.next):
+            if n.move == data:
+                found = i
+        if found == -1:
+            self.next.append(Node(data))
+        return self.next[found]
+    
+    def __str__(self, level=0):
+        ret = str(level)+"."+level*" "+self.move + "\n"
+        for child in self.next:
+            ret += child.__str__(level+1)
+        return ret
 
 times = []
 
@@ -36,26 +57,34 @@ class Chess:
         self.window.update()
         
         self.resetBoard = False
+        self.inbook = True
         self.whiteWins = False
         self.blackWins = False
-        self.AIisWhite = True
+        self.AIisWhite = False
         self.AIisBlack = True
         self.waitingOnPlayer = False
         self.windowClosed = False
         self.logicalClickStack = [[-1, -1], [-1,-1]]
+        self.moveHistory = []
         self.prospectiveMoveBoard = self.board[:]
         self.prospectiveMovePiece = OFFBOARD
+        self.root = self.makeOpeningDatabase()
+        self.currentNode = self.root
 
     def mainloop(self):
         while not self.windowClosed:
             if self.gameCtrlFlags & whiteToMove:
                 if self.AIisWhite:
-                    start = time.time()
-                    chessbot.makeAutomaticMove(6)
-                    end = time.time()
-                    self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                    print(f"{end-start} spent generating move tree") 
-                    times.append(end-start)
+                    if self.inbook:
+                        self.playOpening()
+                        print("White opening")
+                    else:
+                        start = time.time()
+                        self.moveHistory.append(chessbot.makeAutomaticMove(5))
+                        end = time.time()
+                        self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                        print(f"{end-start} spent generating move tree") 
+                        times.append(end-start)
                 else:
                     self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
@@ -64,11 +93,15 @@ class Chess:
                         self.prospectiveMovePiece = OFFBOARD                   
             else:
                 if self.AIisBlack:
-                    start = time.time()
-                    chessbot.makeAutomaticMove(6)
-                    end = time.time()
-                    self.prospectiveMoveBoard = chessbot.getCurrentBoard()
-                    times.append(end-start)
+                    if self.inbook:
+                        self.playOpening()
+                        print("Black opening")
+                    else:
+                        start = time.time()
+                        self.moveHistory.append(chessbot.makeAutomaticMove(5))
+                        end = time.time()
+                        self.prospectiveMoveBoard = chessbot.getCurrentBoard()
+                        times.append(end-start)
                 else:
                     self.waitingOnPlayer = True
                     if not self.waitingOnPlayer:
@@ -134,9 +167,13 @@ class Chess:
             logicalPosition = [int(gridPosition[0] / (sizeOfBoard / 8)), int(gridPosition[1] / (sizeOfBoard /8))]
             self.logicalClickStack[1] = self.logicalClickStack[0]
             self.logicalClickStack[0] = [logicalPosition[0], 7-logicalPosition[1]]
-            self.waitingOnPlayer = not chessbot.makeManualMove(self.convertLogicalPositionsToUCI(self.logicalClickStack[0], self.logicalClickStack[1]))
+            move = self.convertLogicalPositionsToUCI(self.logicalClickStack[0], self.logicalClickStack[1])
+            self.waitingOnPlayer = not chessbot.makeManualMove(move)
             if self.waitingOnPlayer:
-                 chessbot.makeManualMove(self.convertLogicalPositionsToUCI(self.logicalClickStack[0], self.logicalClickStack[1])+'q')
+                move += "q"
+                chessbot.makeManualMove(move)
+            if not self.waitingOnPlayer:
+                self.moveHistory.append(move)
              
     
     def convertLogicalPositionsToUCI(self, clickLast: list, clickFirst: list)->str:
@@ -152,6 +189,40 @@ class Chess:
             return self.board[ col + 8 * row ]
         else:
             return OFFBOARD
+    def makeOpeningDatabase(self) -> Node:
+        root = Node()
+        with open("C:/repos/chessbot/games.txt", "r") as infile:
+            for game in infile.readlines():
+                moves = game.split()
+                child = root
+                for i, move in enumerate(moves):
+                    child = child.addChild(move)
+                    if i == 25:
+                        break
+        return root
+
+    def playOpening(self) -> bool:
+        if not len(self.moveHistory):
+            self.currentNode = random.choice(self.root.next)
+            chessbot.makeManualMove(self.currentNode.move)
+            self.moveHistory.append(self.currentNode.move)
+            return True
+        self.currentNode = self.root
+        for move in self.moveHistory:
+            self.inbook = False
+            for i, booknode in enumerate(self.currentNode.next):
+                if move == booknode.move:
+                    self.currentNode = self.currentNode.next[i]
+                    self.inbook = True
+                    break
+        if self.inbook:
+            if len(self.currentNode.next):
+                self.currentNode = random.choice(self.currentNode.next)
+                if chessbot.makeManualMove(self.currentNode.move):
+                    self.moveHistory.append(self.currentNode.move)
+                    return True
+        self.inbook = False
+        return False
 
 def getSpace(col: int, row: int, board: list)->int:
         if( row >= 0 and row < 8 and col >= 0 and col < 8 ):
@@ -165,7 +236,8 @@ def printBoardToTerminal(board: list):
             c = getSpace(j,i, board)
             print(f"{c:3}", end="")
         print()
-    
+
+
    
 if __name__ == "__main__":
     game = Chess()

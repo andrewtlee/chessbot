@@ -69,14 +69,14 @@ std::array<int, 64> getAutomaticMove( int depth )
 	return currboard;
 }
 
-bool makeAutomaticMove(int depth)
+std::string makeAutomaticMove(int depth)
 {
 	auto gen = game::currentBoard.getMove();
 	std::vector<std::future<board>> fmoves;
 	if( !gen )
 	{
 		game::currentBoard.gameCtrlFlags |= gameOver;
-		return false; // no legal moves
+		return std::string(""); // no legal moves
 	}
 	while( gen )
 	{
@@ -106,7 +106,7 @@ bool makeAutomaticMove(int depth)
 	}
 	game::currentBoard = bestmove;
 	game::boardHistory.push_back( game::currentBoard );
-	return true; // report success
+	return game::currentBoard.getUCIMove(); // report success
 }
 
 bool makeManualMove( std::string UCImove )

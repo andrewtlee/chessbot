@@ -158,7 +158,7 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
          board temp = gen();
          auto qresult = tTable.queryTable( temp );
          auto intable = qresult.first;
-         if( intable && qresult.second.depthEncountered <= depth )
+         if( intable && qresult.second.depthEncountered >= depth && false )
          {
             temp = qresult.second;
             b.heuristicVal = std::max( b.heuristicVal, temp.heuristicVal );
@@ -178,12 +178,11 @@ board alphabeta( board b, int depth, int maxdepth, int alpha, int beta )
    else
    {
       b.heuristicVal = std::numeric_limits<int>::max();
-      //std::sort( moves.begin(), moves.end(), []( board a, board b ) {return a.heuristicVal < b.heuristicVal; } );
       while( gen )
       {
          auto temp = gen();
          auto qresult = tTable.queryTable( temp );
-         if( qresult.first && qresult.second.depthEncountered <= depth )
+         if( qresult.first && qresult.second.depthEncountered >= depth && false )
          {
             temp = qresult.second;
             b.heuristicVal = std::min( b.heuristicVal, temp.heuristicVal );
